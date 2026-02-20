@@ -92,13 +92,36 @@ async function pollEmail() {
             processedCount++;
             
             // Save locally for backup
-            const backupFile = path.join(__dirname, 'last-stock.json');
+            const backupFile = path.join(__dirname, 'data', 'latest-stock.json');
+            fs.mkdirSync(path.dirname(backupFile), { recursive: true });
             fs.writeFileSync(backupFile, JSON.stringify({
               timestamp: new Date().toISOString(),
               subject,
               from,
               data: stockData
             }, null, 2));
+            
+            // Auto-commit to GitHub
+            try {
+              const { execSync } = require('child_process');
+              const repoDir = '/Users/apple/.openclaw/workspace';
+              
+              // Check if data directory exists in repo
+              const dataDir = path.join(repoDir, 'inventory-site/my-app/data');
+              fs.mkdirSync(dataDir, { recursive: true });
+              
+              // Copy latest data to repo
+              fs.copyFileSync(backupFile, path.join(dataDir, 'latest-stock.json'));
+              
+              // Git commit and push
+              execSync('git add inventory-site/my-app/data/latest-stock.json', { cwd: repoDir });
+              const timestamp = new Date().toISOString();
+              execSync(`git commit -m "data: auto-update from email - ${timestamp}"`, { cwd: repoDir });
+              execSync('git push origin main', { cwd: repoDir });
+              console.log('   ✅ Committed to GitHub');
+            } catch (gitError) {
+              console.log('   ⚠️ GitHub commit failed:', gitError.message);
+            }
             
             // Only process the first valid email
             break;
