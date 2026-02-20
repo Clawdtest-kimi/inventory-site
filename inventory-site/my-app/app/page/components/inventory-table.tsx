@@ -1,3 +1,5 @@
+"use client";
+
 import { StockRow } from "@/lib/types";
 import {
   Table,
@@ -7,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useMemo } from "react";
 
 interface InventoryTableProps {
   data: StockRow[];
@@ -18,15 +21,30 @@ function formatNumber(num: number): string {
 }
 
 export function InventoryTable({ data, totalRow }: InventoryTableProps) {
-  const micronColumns = [
-    { label: "6.35µ", reels: "reels635", qty: "qty635" },
-    { label: "7µ", reels: "reels7", qty: "qty7" },
-    { label: "8µ", reels: "reels8", qty: "qty8" },
-    { label: "9µ", reels: "reels9", qty: "qty9" },
-    { label: "12µ", reels: "reels12", qty: "qty12" },
-    { label: "37µ", reels: "reels37", qty: "qty37" },
-    { label: "40µ", reels: "reels40", qty: "qty40" },
-  ] as const;
+  const allMicronColumns = [
+    { label: "6.35µ", reels: "reels635" as const, qty: "qty635" as const },
+    { label: "7µ", reels: "reels7" as const, qty: "qty7" as const },
+    { label: "8µ", reels: "reels8" as const, qty: "qty8" as const },
+    { label: "9µ", reels: "reels9" as const, qty: "qty9" as const },
+    { label: "12µ", reels: "reels12" as const, qty: "qty12" as const },
+    { label: "37µ", reels: "reels37" as const, qty: "qty37" as const },
+    { label: "40µ", reels: "reels40" as const, qty: "qty40" as const },
+  ];
+
+  // Determine which columns have actual data (not all zeros)
+  const visibleColumns = useMemo(() => {
+    return allMicronColumns.filter(col => {
+      // Check if any row has data for this column
+      return data.some(row => {
+        const reels = row[col.reels] || 0;
+        const qty = row[col.qty] || 0;
+        return reels > 0 || qty > 0;
+      });
+    });
+  }, [data]);
+
+  // If no columns have data, show all (fallback)
+  const micronColumns = visibleColumns.length > 0 ? visibleColumns : allMicronColumns;
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
