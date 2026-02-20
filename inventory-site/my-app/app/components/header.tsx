@@ -13,13 +13,16 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center space-x-4">
-            <Image 
-              src="/logo.png" 
-              alt="Company Logo" 
-              width={150} 
-              height={50} 
-              className="h-12 w-auto object-contain"
-            />
+            {/* LOGO_HIDDEN_TEMPORARILY */}
+            <div className="hidden">
+              <Image 
+                src="/logo.png" 
+                alt="Company Logo" 
+                width={150} 
+                height={50} 
+                className="h-12 w-auto object-contain"
+              />
+            </div>
             <div className="hidden sm:block h-8 w-px bg-slate-300" />
             <span className="hidden sm:block text-xl font-semibold text-slate-800">
               Inventory System
