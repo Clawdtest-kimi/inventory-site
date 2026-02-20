@@ -22,7 +22,7 @@ export function Header() {
             />
             <div className="hidden sm:block h-8 w-px bg-slate-300" />
             <span className="hidden sm:block text-xl font-semibold text-slate-800">
-              Inventory System
+              Inventory
             </span>
           </Link>
 

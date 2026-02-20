@@ -15,15 +15,18 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "imap-simple": "^5.1.0",
+    "ioredis": "^5.9.3",
     "lucide-react": "^0.575.0",
     "mailparser": "^3.9.3",
     "next": "16.1.6",
     "next-auth": "^4.24.13",
+    "node-fetch": "^2.7.0",
     "papaparse": "^5.5.3",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

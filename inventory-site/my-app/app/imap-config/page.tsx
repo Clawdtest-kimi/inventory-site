@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RefreshCw, CheckCircle, XCircle, Clock } from "lucide-react";
+
+interface PollerStatus {
+  lastChecked: string | null;
+  lastEmailCount: number;
+  isRunning: boolean;
+  error: string | null;
+}
 
 export default function IMAPConfigPage() {
   const { data: session, status } = useSession();
@@ -14,6 +22,12 @@ export default function IMAPConfigPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [connectionStatus, setConnectionStatus] = useState<any>(null);
+  const [pollerStatus, setPollerStatus] = useState<PollerStatus>({
+    lastChecked: null,
+    lastEmailCount: 0,
+    isRunning: false,
+    error: null
+  });
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -21,15 +35,48 @@ export default function IMAPConfigPage() {
     }
   }, [status, router]);
 
-  // Check current IMAP status on load
+  // Load last status from localStorage
   useEffect(() => {
     if (session) {
-      fetch("/api/poll-email")
-        .then(res => res.json())
-        .then(data => setConnectionStatus(data))
-        .catch(() => setConnectionStatus({ configured: false }));
+      const saved = localStorage.getItem("pollerStatus");
+      if (saved) {
+        setPollerStatus(JSON.parse(saved));
+      }
     }
   }, [session]);
+
+  const checkStatus = async () => {
+    setLoading(true);
+    setMessage("");
+    
+    try {
+      const res = await fetch("/api/email");
+      const data = await res.json();
+      
+      const newStatus: PollerStatus = {
+        lastChecked: new Date().toISOString(),
+        lastEmailCount: data.emails?.length || 0,
+        isRunning: data.status === "ok",
+        error: data.error || null
+      };
+      
+      setPollerStatus(newStatus);
+      localStorage.setItem("pollerStatus", JSON.stringify(newStatus));
+      setMessage("✅ Status checked successfully");
+    } catch (error) {
+      const newStatus: PollerStatus = {
+        lastChecked: new Date().toISOString(),
+        lastEmailCount: 0,
+        isRunning: false,
+        error: "API unreachable"
+      };
+      setPollerStatus(newStatus);
+      localStorage.setItem("pollerStatus", JSON.stringify(newStatus));
+      setMessage("❌ Could not check status. Local poller may not be running.");
+    }
+    
+    setLoading(false);
+  };
 
   const handleTestConnection = async () => {
     setLoading(true);
@@ -71,7 +118,7 @@ export default function IMAPConfigPage() {
         setMessage(`❌ ${data.message}`);
       }
     } catch (error) {
-      setMessage("❌ Error polling emails");
+      setMessage("❌ Error polling emails. Note: IMAP polling runs locally on your Mac, not on Vercel.");
     }
     
     setLoading(false);
@@ -97,44 +144,66 @@ export default function IMAPConfigPage() {
         <CardContent className="space-y-6">
           {/* Status */}
           <div className="bg-slate-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Current Status</h3>
-            {connectionStatus ? (
-              <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Configured:</span>{" "}
-                  {connectionStatus.configured ? (
-                    <span className="text-green-600">Yes</span>
-                  ) : (
-                    <span className="text-red-600">No</span>
-                  )}
-                </p>
-                {connectionStatus.configured && (
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">Local Email Poller Status</h3>
+              <Button onClick={checkStatus} disabled={loading} size="sm" variant="outline">
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Check Status
+              </Button>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                {pollerStatus.isRunning ? (
                   <>
-                    <p><span className="font-medium">Server:</span> {connectionStatus.config?.host}:{connectionStatus.config?.port}</p>
-                    <p><span className="font-medium">User:</span> {connectionStatus.config?.user}</p>
-                    <p>
-                      <span className="font-medium">Connection:</span>{" "}
-                      {connectionStatus.connected ? (
-                        <span className="text-green-600">Connected</span>
-                      ) : (
-                        <span className="text-red-600">Failed</span>
-                      )}
-                    </p>
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-green-600 font-medium">Running</span>
+                  </>
+                ) : pollerStatus.error ? (
+                  <>
+                    <XCircle className="w-4 h-4 text-red-600" />
+                    <span className="text-red-600 font-medium">Not Running</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-4 h-4 text-yellow-600" />
+                    <span className="text-yellow-600 font-medium">Unknown - click Check Status</span>
                   </>
                 )}
               </div>
-            ) : (
-              <p className="text-slate-500">Checking...</p>
-            )}
+              
+              {pollerStatus.lastChecked && (
+                <p className="text-slate-600">
+                  <span className="font-medium">Last checked:</span>{" "}
+                  {new Date(pollerStatus.lastChecked).toLocaleString()}
+                </p>
+              )}
+              
+              {pollerStatus.lastEmailCount > 0 && (
+                <p className="text-slate-600">
+                  <span className="font-medium">Emails found:</span> {pollerStatus.lastEmailCount}
+                </p>
+              )}
+              
+              {pollerStatus.error && (
+                <p className="text-red-600 text-xs">{pollerStatus.error}</p>
+              )}
+              
+              <div className="text-xs text-slate-500 mt-2 pt-2 border-t">
+                <p>Email: stock@packaging.team</p>
+                <p>Server: mail.privateemail.com:993</p>
+                <p>Checks every 15 minutes via local Mac</p>
+              </div>
+            </div>
           </div>
 
           {/* Actions */}
           <div className="flex gap-4">
             <Button onClick={handleTestConnection} disabled={loading} variant="outline">
-              Test Connection
+              Test Vercel API
             </Button>
             <Button onClick={handlePollNow} disabled={loading}>
-              Poll Now
+              Poll Now (Vercel)
             </Button>
           </div>
 
@@ -146,30 +215,29 @@ export default function IMAPConfigPage() {
 
           {/* Setup Instructions */}
           <div className="bg-blue-50 p-4 rounded-lg space-y-3">
-            <h3 className="font-semibold text-blue-900">Setup Instructions</h3>
+            <h3 className="font-semibold text-blue-900">Local Poller Setup (Mac)</h3>
             
             <div className="text-sm text-blue-800 space-y-2">
-              <p><strong>1. Create the email</strong> <code>stock@packaging.team</code> with your email provider</p>
+              <p className="bg-yellow-100 p-2 rounded"><strong>Note:</strong> Vercel blocks IMAP connections. The poller runs on your Mac and posts data to the site.</p>
               
-              <p><strong>2. Get IMAP settings</strong> from your email provider:</p>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Server address (e.g., <code>mail.packaging.team</code> or <code>imap.gmail.com</code>)</li>
-                <li>Port (usually 993 for IMAP with TLS)</li>
-                <li>Username and password</li>
-              </ul>
+              <p><strong>1. Email configured:</strong> <code>stock@packaging.team</code></p>
               
-              <p><strong>3. Set environment variables</strong> in Vercel dashboard:</p>
+              <p><strong>2. Current settings:</strong></p>
               <div className="bg-white p-3 rounded font-mono text-xs space-y-1">
                 <p>IMAP_USER=stock@packaging.team</p>
-                <p>IMAP_PASSWORD=your-email-password</p>
-                <p>IMAP_HOST=mail.yourdomain.com</p>
+                <p>IMAP_HOST=mail.privateemail.com</p>
                 <p>IMAP_PORT=993</p>
                 <p>IMAP_TLS=true</p>
               </div>
               
-              <p><strong>4. Set up automatic polling</strong> (cron job):</p>
-              <p>Add this cron job to check every 15 minutes:</p>
-              <code className="bg-white px-2 py-1 rounded">*/15 * * * * curl -X POST https://my-app-brown-gamma-99.vercel.app/api/poll-email</code>
+              <p><strong>3. Check local poller status on your Mac:</strong></p>
+              <code className="bg-white px-2 py-1 rounded">launchctl list | grep emailpoller</code>
+              
+              <p><strong>4. View logs:</strong></p>
+              <code className="bg-white px-2 py-1 rounded">tail -f /tmp/email-poller.log</code>
+              
+              <p><strong>5. Run manually:</strong></p>
+              <code className="bg-white px-2 py-1 rounded">node email-poller.js</code>
             </div>
           </div>
 

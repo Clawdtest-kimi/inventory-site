@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, RotateCcw } from "lucide-react";
+import { Search, RotateCcw, RefreshCw } from "lucide-react";
 
 // Default stock data from the CSV file
 const DEFAULT_CSV = `Width (mm),6.35µ,7µ,8µ,9µ,12µ,37µ,40µ,Total,,,,,,,,
@@ -78,17 +78,59 @@ export default function HomePage() {
   const [width, setWidth] = useState("all");
   const [showResults, setShowResults] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/email");
+      const apiData = await res.json();
+      
+      if (apiData.hasData && apiData.data) {
+        console.log("Loaded from Redis:", apiData.data.length, "rows");
+        setData(apiData.data);
+        setLastUpdated(apiData.updatedAt);
+        localStorage.setItem("inventoryData", JSON.stringify(apiData.data));
+        localStorage.setItem("inventoryUpdated", apiData.updatedAt);
+      } else {
+        const saved = localStorage.getItem("inventoryData");
+        if (saved) {
+          setData(JSON.parse(saved));
+          setLastUpdated(localStorage.getItem("inventoryUpdated"));
+        } else {
+          const parsed = parseStockCSV(DEFAULT_CSV);
+          setData(parsed.data);
+        }
+      }
+    } catch {
+      const saved = localStorage.getItem("inventoryData");
+      if (saved) {
+        setData(JSON.parse(saved));
+        setLastUpdated(localStorage.getItem("inventoryUpdated"));
+      } else {
+        const parsed = parseStockCSV(DEFAULT_CSV);
+        setData(parsed.data);
+      }
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     setIsClient(true);
+    loadData();
     
-    const saved = localStorage.getItem("inventoryData");
+    // Listen for storage changes from Master page
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'inventoryData' && e.newValue) {
+        console.log("🔄 Stock page: detected data update from Master page");
+        setData(JSON.parse(e.newValue));
+        setLastUpdated(localStorage.getItem('inventoryUpdated'));
+      }
+    };
     
-    if (saved) {
-      setData(JSON.parse(saved));
-    } else {
-      const parsed = parseStockCSV(DEFAULT_CSV);
-      setData(parsed.data);
-    }
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Calculate total rolls for each thickness
@@ -172,6 +214,44 @@ export default function HomePage() {
   }, [data, width, thickness, showResults]);
 
   const totalRow = getTotalRow(filteredData);
+
+  // Calculate dynamic total based on visible/filtered data and selected thickness
+  const dynamicTotal = useMemo(() => {
+    if (thickness === "all") {
+      return {
+        reels: totalRow.totalReels,
+        qty: totalRow.totalQty,
+      };
+    }
+    // Sum only the selected thickness columns from filtered data
+    const thicknessReelsMap: Record<string, keyof StockRow> = {
+      "6.35": "reels635",
+      "7": "reels7",
+      "8": "reels8",
+      "9": "reels9",
+      "12": "reels12",
+      "37": "reels37",
+      "40": "reels40",
+    };
+    const thicknessQtyMap: Record<string, keyof StockRow> = {
+      "6.35": "qty635",
+      "7": "qty7",
+      "8": "qty8",
+      "9": "qty9",
+      "12": "qty12",
+      "37": "qty37",
+      "40": "qty40",
+    };
+    const reelsKey = thicknessReelsMap[thickness];
+    const qtyKey = thicknessQtyMap[thickness];
+    return filteredData.reduce(
+      (acc, row) => ({
+        reels: acc.reels + ((row[reelsKey] as number) || 0),
+        qty: acc.qty + ((row[qtyKey] as number) || 0),
+      }),
+      { reels: 0, qty: 0 }
+    );
+  }, [filteredData, thickness, totalRow]);
 
   // Determine which columns have data (for hiding empty columns)
   const visibleColumns = useMemo(() => {
@@ -314,14 +394,32 @@ export default function HomePage() {
         <Card className="shadow-sm border-slate-200">
           <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Search Results ({filteredData.length} items)
-              </h2>
-              {thickness !== "all" && (
-                <div className="text-sm text-slate-600">
-                  Showing data for <span className="font-medium">{thickness}µ</span> thickness
-                </div>
-              )}
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Search Results ({filteredData.length} items)
+                </h2>
+                {lastUpdated && (
+                  <p className="text-xs text-slate-500">
+                    Last updated: {new Date(lastUpdated).toLocaleString()}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {thickness !== "all" && (
+                  <div className="text-sm text-slate-600">
+                    Showing data for <span className="font-medium">{thickness}µ</span> thickness
+                  </div>
+                )}
+                <Button 
+                  onClick={loadData} 
+                  size="sm" 
+                  variant="outline"
+                  disabled={loading}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             </div>
 
             {filteredData.length > 0 ? (
@@ -403,8 +501,12 @@ export default function HomePage() {
                             <TableCell className="text-center">{getThicknessData(row, thickness).qty.toLocaleString() || "-"}</TableCell>
                           </>
                         )}
-                        <TableCell className="text-center font-semibold">{row.totalReels}</TableCell>
-                        <TableCell className="text-center font-semibold">{row.totalQty.toLocaleString()}</TableCell>
+                        <TableCell className="text-center font-semibold">
+                          {thickness === "all" ? row.totalReels : getThicknessData(row, thickness).reels}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold">
+                          {(thickness === "all" ? row.totalQty : getThicknessData(row, thickness).qty).toLocaleString()}
+                        </TableCell>
                       </TableRow>
                     ))}
                     {/* Total Row */}
@@ -438,12 +540,12 @@ export default function HomePage() {
                         )
                       ) : (
                         <>
-                          <TableCell className="text-center">-</TableCell>
-                          <TableCell className="text-center">-</TableCell>
+                          <TableCell className="text-center">{dynamicTotal.reels.toLocaleString()}</TableCell>
+                          <TableCell className="text-center">{dynamicTotal.qty.toLocaleString()}</TableCell>
                         </>
                       )}
-                      <TableCell className="text-center">{totalRow.totalReels.toLocaleString()}</TableCell>
-                      <TableCell className="text-center">{totalRow.totalQty.toLocaleString()}</TableCell>
+                      <TableCell className="text-center">{dynamicTotal.reels.toLocaleString()}</TableCell>
+                      <TableCell className="text-center">{dynamicTotal.qty.toLocaleString()}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
