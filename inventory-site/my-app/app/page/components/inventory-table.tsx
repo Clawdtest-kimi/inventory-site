@@ -33,13 +33,16 @@ export function InventoryTable({ data, totalRow }: InventoryTableProps) {
 
   // Determine which columns have actual data (not all zeros)
   const visibleColumns = useMemo(() => {
+    console.log("Checking columns for data:", data.length, "rows");
     return allMicronColumns.filter(col => {
       // Check if any row has data for this column
-      return data.some(row => {
-        const reels = row[col.reels] || 0;
-        const qty = row[col.qty] || 0;
+      const hasData = data.some(row => {
+        const reels = row[col.reels] ?? 0;
+        const qty = row[col.qty] ?? 0;
         return reels > 0 || qty > 0;
       });
+      console.log(`Column ${col.label}: hasData=${hasData}`);
+      return hasData;
     });
   }, [data]);
 
