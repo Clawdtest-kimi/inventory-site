@@ -183,6 +183,20 @@ export default function MasterPage() {
         console.log("⚠️ Could not sync to Redis, but localStorage updated");
       }
       
+      // Auto-commit to GitHub
+      try {
+        const response = await fetch('/api/git-commit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data, filename: file.name, timestamp: updatedAt })
+        });
+        if (response.ok) {
+          console.log("✅ Committed to GitHub");
+        }
+      } catch (e) {
+        console.log("⚠️ GitHub commit failed");
+      }
+      
       logEntry.success = true;
       logEntry.rows = data.length;
       addToLog(logEntry);
