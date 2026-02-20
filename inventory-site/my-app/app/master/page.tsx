@@ -33,7 +33,7 @@ export default function MasterPage() {
       const text = await file.text();
       console.log("File content preview:", text.substring(0, 1000));
       
-      const data = parseStockFile(text, file.name);
+      const data = await parseStockFile(text, file.name);
       console.log("Parsed data:", data);
       
       if (data.length === 0) {
