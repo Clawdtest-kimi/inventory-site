@@ -27,6 +27,10 @@ npm run dev
 # Open http://localhost:3000
 ```
 
+## Production URL
+
+**Live Site:** https://inventory-site-v2.vercel.app
+
 ## Deploy to Vercel
 
 ### Option 1: Vercel CLI
