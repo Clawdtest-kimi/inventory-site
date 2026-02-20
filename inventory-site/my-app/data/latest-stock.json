@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-02-20T11:57:42.611Z",
-  "subject": "Fwd: Fw: Daily Report of Free Stock - Hungary Aluminium foil on 02-Feb-2026",
-  "from": "Popov <popov@packaging.team>",
+  "timestamp": "2026-02-20T12:00:18.520Z",
+  "subject": "Fw: Daily Report of Free Stock - Hungary Aluminium foil on 02-Feb-2026",
+  "from": "Popov <serge_popov@yahoo.com>",
   "data": [
     {
       "width": 565,
@@ -227,17 +227,10 @@
     },
     {
       "width": 1220,
-      "totalReels": 4,
-      "totalQty": 2364,
+      "totalReels": 279,
+      "totalQty": 142778,
       "reels8": 4,
       "qty8": 2364
-    },
-    {
-      "width": 1445,
-      "totalReels": 11,
-      "totalQty": 7824,
-      "reels635": 11,
-      "qty635": 7824
     }
   ]
 }
