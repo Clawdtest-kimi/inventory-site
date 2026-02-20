@@ -79,7 +79,7 @@ export async function pollStockEmails(config: IMAPConfig): Promise<ProcessedEmai
       const emailText = textPart.body;
       
       // Try to extract stock data
-      const stockData = parseStockFile(emailText, "email.txt");
+      const stockData = await parseStockFile(emailText, "email.txt");
       
       if (stockData.length > 0) {
         console.log(`✅ Found ${stockData.length} rows`);
