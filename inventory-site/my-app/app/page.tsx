@@ -173,6 +173,27 @@ export default function HomePage() {
 
   const totalRow = getTotalRow(filteredData);
 
+  // Determine which columns have data (for hiding empty columns)
+  const visibleColumns = useMemo(() => {
+    if (thickness !== "all") return []; // Single thickness view handles differently
+    
+    return [
+      { key: "6.35", label: "6.35µ", reels: "reels635", qty: "qty635" },
+      { key: "7", label: "7µ", reels: "reels7", qty: "qty7" },
+      { key: "8", label: "8µ", reels: "reels8", qty: "qty8" },
+      { key: "9", label: "9µ", reels: "reels9", qty: "qty9" },
+      { key: "12", label: "12µ", reels: "reels12", qty: "qty12" },
+      { key: "37", label: "37µ", reels: "reels37", qty: "qty37" },
+      { key: "40", label: "40µ", reels: "reels40", qty: "qty40" },
+    ].filter(col => {
+      return filteredData.some(row => {
+        const reels = (row as any)[col.reels] || 0;
+        const qty = (row as any)[col.qty] || 0;
+        return reels > 0 || qty > 0;
+      });
+    });
+  }, [filteredData, thickness]);
+
   // Reset width when thickness changes (width might not have data for new thickness)
   useEffect(() => {
     setWidth("all");
@@ -310,22 +331,32 @@ export default function HomePage() {
                     <TableRow className="bg-slate-50">
                       <TableHead className="font-semibold text-slate-900">Width (mm)</TableHead>
                       {thickness === "all" ? (
-                        <>
-                          <TableHead className="text-center">6.35µ Reels</TableHead>
-                          <TableHead className="text-center">6.35µ Qty (kg)</TableHead>
-                          <TableHead className="text-center">7µ Reels</TableHead>
-                          <TableHead className="text-center">7µ Qty (kg)</TableHead>
-                          <TableHead className="text-center">8µ Reels</TableHead>
-                          <TableHead className="text-center">8µ Qty (kg)</TableHead>
-                          <TableHead className="text-center">9µ Reels</TableHead>
-                          <TableHead className="text-center">9µ Qty (kg)</TableHead>
-                          <TableHead className="text-center">12µ Reels</TableHead>
-                          <TableHead className="text-center">12µ Qty (kg)</TableHead>
-                          <TableHead className="text-center">37µ Reels</TableHead>
-                          <TableHead className="text-center">37µ Qty (kg)</TableHead>
-                          <TableHead className="text-center">40µ Reels</TableHead>
-                          <TableHead className="text-center">40µ Qty (kg)</TableHead>
-                        </>
+                        visibleColumns.length > 0 ? (
+                          visibleColumns.map(col => (
+                            <>
+                              <TableHead key={`${col.key}-reels`} className="text-center">{col.label} Reels</TableHead>
+                              <TableHead key={`${col.key}-qty`} className="text-center">{col.label} Qty (kg)</TableHead>
+                            </>
+                          ))
+                        ) : (
+                          // Fallback: show all columns if none detected
+                          <>
+                            <TableHead className="text-center">6.35µ Reels</TableHead>
+                            <TableHead className="text-center">6.35µ Qty (kg)</TableHead>
+                            <TableHead className="text-center">7µ Reels</TableHead>
+                            <TableHead className="text-center">7µ Qty (kg)</TableHead>
+                            <TableHead className="text-center">8µ Reels</TableHead>
+                            <TableHead className="text-center">8µ Qty (kg)</TableHead>
+                            <TableHead className="text-center">9µ Reels</TableHead>
+                            <TableHead className="text-center">9µ Qty (kg)</TableHead>
+                            <TableHead className="text-center">12µ Reels</TableHead>
+                            <TableHead className="text-center">12µ Qty (kg)</TableHead>
+                            <TableHead className="text-center">37µ Reels</TableHead>
+                            <TableHead className="text-center">37µ Qty (kg)</TableHead>
+                            <TableHead className="text-center">40µ Reels</TableHead>
+                            <TableHead className="text-center">40µ Qty (kg)</TableHead>
+                          </>
+                        )
                       ) : (
                         <>
                           <TableHead className="text-center">Reels</TableHead>
@@ -341,22 +372,31 @@ export default function HomePage() {
                       <TableRow key={row.width} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
                         <TableCell className="font-medium">{row.width}</TableCell>
                         {thickness === "all" ? (
-                          <>
-                            <TableCell className="text-center">{row.reels635 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty635?.toLocaleString() || "-"}</TableCell>
-                            <TableCell className="text-center">{row.reels7 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty7?.toLocaleString() || "-"}</TableCell>
-                            <TableCell className="text-center">{row.reels8 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty8?.toLocaleString() || "-"}</TableCell>
-                            <TableCell className="text-center">{row.reels9 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty9?.toLocaleString() || "-"}</TableCell>
-                            <TableCell className="text-center">{row.reels12 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty12?.toLocaleString() || "-"}</TableCell>
-                            <TableCell className="text-center">{row.reels37 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty37?.toLocaleString() || "-"}</TableCell>
-                            <TableCell className="text-center">{row.reels40 || "-"}</TableCell>
-                            <TableCell className="text-center">{row.qty40?.toLocaleString() || "-"}</TableCell>
-                          </>
+                          visibleColumns.length > 0 ? (
+                            visibleColumns.map(col => (
+                              <>
+                                <TableCell key={`${row.width}-${col.key}-reels`} className="text-center">{(row as any)[col.reels] || "-"}</TableCell>
+                                <TableCell key={`${row.width}-${col.key}-qty`} className="text-center">{(row as any)[col.qty]?.toLocaleString() || "-"}</TableCell>
+                              </>
+                            ))
+                          ) : (
+                            <>
+                              <TableCell className="text-center">{row.reels635 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty635?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-center">{row.reels7 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty7?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-center">{row.reels8 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty8?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-center">{row.reels9 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty9?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-center">{row.reels12 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty12?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-center">{row.reels37 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty37?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-center">{row.reels40 || "-"}</TableCell>
+                              <TableCell className="text-center">{row.qty40?.toLocaleString() || "-"}</TableCell>
+                            </>
+                          )
                         ) : (
                           <>
                             <TableCell className="text-center">{getThicknessData(row, thickness).reels || "-"}</TableCell>
@@ -371,22 +411,31 @@ export default function HomePage() {
                     <TableRow className="bg-slate-100 font-bold border-t-2 border-slate-300">
                       <TableCell>Total</TableCell>
                       {thickness === "all" ? (
-                        <>
-                          <TableCell className="text-center">{totalRow.reels635 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty635?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.reels7 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty7?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.reels8 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty8?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.reels9 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty9?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.reels12 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty12?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.reels37 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty37?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.reels40 || "-"}</TableCell>
-                          <TableCell className="text-center">{totalRow.qty40?.toLocaleString() || "-"}</TableCell>
-                        </>
+                        visibleColumns.length > 0 ? (
+                          visibleColumns.map(col => (
+                            <>
+                              <TableCell key={`total-${col.key}-reels`} className="text-center">{(totalRow as any)[col.reels] || "-"}</TableCell>
+                              <TableCell key={`total-${col.key}-qty`} className="text-center">{(totalRow as any)[col.qty]?.toLocaleString() || "-"}</TableCell>
+                            </>
+                          ))
+                        ) : (
+                          <>
+                            <TableCell className="text-center">{totalRow.reels635 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty635?.toLocaleString() || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.reels7 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty7?.toLocaleString() || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.reels8 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty8?.toLocaleString() || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.reels9 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty9?.toLocaleString() || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.reels12 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty12?.toLocaleString() || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.reels37 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty37?.toLocaleString() || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.reels40 || "-"}</TableCell>
+                            <TableCell className="text-center">{totalRow.qty40?.toLocaleString() || "-"}</TableCell>
+                          </>
+                        )
                       ) : (
                         <>
                           <TableCell className="text-center">-</TableCell>
