@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Parse the stock table from email
-    const data = parseStockFile(contentToParse, "email.txt");
+    const data = await parseStockFile(contentToParse, "email.txt");
     
     if (data.length === 0) {
       return NextResponse.json({ 
