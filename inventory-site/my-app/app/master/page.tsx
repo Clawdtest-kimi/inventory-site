@@ -9,18 +9,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { parseStockFile } from "@/lib/email-parser";
 
+interface GitInfo {
+  hash: string;
+  date: string;
+  message: string;
+}
+
 export default function MasterPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [debugInfo, setDebugInfo] = useState("");
+  const [gitInfo, setGitInfo] = useState<GitInfo | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
+
+  // Fetch git info on load
+  useEffect(() => {
+    fetch("/api/git-info")
+      .then(res => res.json())
+      .then(data => setGitInfo(data))
+      .catch(() => setGitInfo(null));
+  }, []);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,7 +149,15 @@ export default function MasterPage() {
 
           <div className="border-t pt-4 mt-4 bg-slate-50 p-3 rounded">
             <p className="text-xs text-slate-500">
-              <span className="font-semibold">Last GitHub Update:</span> d0eef3e — 2026-02-20 08:18:38 +0200
+              <span className="font-semibold">Last GitHub Update:</span>{" "}
+              {gitInfo ? (
+                <>
+                  {gitInfo.hash} — {new Date(gitInfo.date).toLocaleString()} 
+                  <span className="italic ml-1">({gitInfo.message})</span>
+                </>
+              ) : (
+                "Loading..."
+              )}
             </p>
           </div>
         </CardContent>
