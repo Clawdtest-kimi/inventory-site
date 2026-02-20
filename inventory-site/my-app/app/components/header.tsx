@@ -16,9 +16,9 @@ export function Header() {
             <Image 
               src="/logo.png" 
               alt="Company Logo" 
-              width={75} 
-              height={25} 
-              className="h-6 w-auto object-contain"
+              width={150} 
+              height={50} 
+              className="h-12 w-auto object-contain"
             />
             <div className="hidden sm:block h-8 w-px bg-slate-300" />
             <span className="hidden sm:block text-xl font-semibold text-slate-800">
