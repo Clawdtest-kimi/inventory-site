@@ -1,4 +1,3 @@
-import Papa from 'papaparse';
 import { StockRow, ParsedCSV } from './types';
 
 export function parseStockCSV(csvContent: string): ParsedCSV {
