@@ -1,0 +1,14 @@
+# OpenClaw workspace files
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+.DS_Store
+.openclaw/
+.memory/
+
+# Keep only the inventory site
+# All other workspace config is local-only
