@@ -50,19 +50,26 @@ export function parseStockFile(content: string, filename: string): ParsedEmailDa
  * Parse .eml email file - extract body and find table
  */
 function parseEML(content: string): ParsedEmailData[] {
+  console.log("Parsing EML file, length:", content.length);
+  
   // Try to extract the plain text body from the email
   let body = extractEmailBody(content);
+  console.log("Extracted body length:", body.length);
+  console.log("Body preview:", body.substring(0, 500));
   
   // Try parsing as CSV first (most reliable)
   let data = parseCSV(body);
+  console.log("CSV parse result:", data.length, "rows");
   if (data.length > 0) return data;
   
   // Try as text table
   data = parseTextTable(body);
+  console.log("Text table parse result:", data.length, "rows");
   if (data.length > 0) return data;
   
   // Try the raw email content
   data = parseEmailTable(content);
+  console.log("Raw email parse result:", data.length, "rows");
   if (data.length > 0) return data;
   
   return [];
@@ -75,15 +82,14 @@ function extractEmailBody(emlContent: string): string {
   // Decode quoted-printable first
   let decoded = decodeQuotedPrintable(emlContent);
   
-  // Look for the plain text body
-  // In multipart emails, look for Content-Type: text/plain
-  const plainTextMatch = decoded.match(/Content-Type:\s*text\/plain[\s\S]*?\r?\n\r?\n([\s\S]*?)(?=\r?\n--)/i);
+  // Look for the plain text body - more flexible regex
+  const plainTextMatch = decoded.match(/Content-Type:\s*text\/plain[\s\S]*?(?:\r?\n){2}([\s\S]*?)(?=(?:\r?\n--[\w-]+|$))/i);
   if (plainTextMatch) {
     return plainTextMatch[1].trim();
   }
   
   // If no plain text, look for HTML and strip tags
-  const htmlMatch = decoded.match(/Content-Type:\s*text\/html[\s\S]*?\r?\n\r?\n([\s\S]*?)(?=\r?\n--)/i);
+  const htmlMatch = decoded.match(/Content-Type:\s*text\/html[\s\S]*?(?:\r?\n){2}([\s\S]*?)(?=(?:\r?\n--[\w-]+|$))/i);
   if (htmlMatch) {
     return stripHtmlTags(htmlMatch[1]);
   }
@@ -110,6 +116,8 @@ function stripHtmlTags(html: string): string {
  * Parse CSV format (handles both regular CSV and email table format)
  */
 function parseCSV(csvContent: string): ParsedEmailData[] {
+  console.log("Parsing CSV, content preview:", csvContent.substring(0, 500));
+  
   const lines = csvContent.trim().split(/\r?\n/);
   const data: ParsedEmailData[] = [];
   let dataStarted = false;
@@ -117,47 +125,63 @@ function parseCSV(csvContent: string): ParsedEmailData[] {
   for (const line of lines) {
     const trimmed = line.trim();
     
-    // Skip empty lines and obvious header rows
-    if (!trimmed || trimmed.toLowerCase().includes('width (mm)')) continue;
-    if (trimmed.toLowerCase().startsWith('reels (nos)')) {
+    // Skip empty lines
+    if (!trimmed) continue;
+    
+    // Look for header row to identify data start
+    if (trimmed.toLowerCase().includes('width') || trimmed.toLowerCase().includes('reels (nos)')) {
       dataStarted = true;
       continue;
     }
+    
+    // Skip total row
     if (trimmed.toLowerCase().startsWith('total')) continue;
     
-    // Split by comma
-    const cols = trimmed.split(',').map(c => c.trim());
-    if (cols.length < 3) continue;
+    // Skip if data hasn't started yet
+    if (!dataStarted) continue;
     
+    // Split by comma and clean up
+    const cols = trimmed.split(',').map(c => c.trim()).filter(c => c !== '');
+    if (cols.length < 2) continue;
+    
+    // First column should be width (number)
     const width = parseFloat(cols[0]);
-    if (!width || width < 100) continue;
+    if (isNaN(width) || width < 100 || width > 2000) continue;
+    
+    // Parse numbers from remaining columns
+    const nums = cols.slice(1).map(c => parseInt(c) || 0);
+    
+    // Need at least some data columns
+    if (nums.length < 2) continue;
     
     const row: ParsedEmailData = {
       width,
-      reels635: parseInt(cols[1]) || 0,
-      qty635: parseInt(cols[2]) || 0,
-      reels7: parseInt(cols[3]) || 0,
-      qty7: parseInt(cols[4]) || 0,
-      reels8: parseInt(cols[5]) || 0,
-      qty8: parseInt(cols[6]) || 0,
-      reels9: parseInt(cols[7]) || 0,
-      qty9: parseInt(cols[8]) || 0,
-      reels12: parseInt(cols[9]) || 0,
-      qty12: parseInt(cols[10]) || 0,
-      reels37: parseInt(cols[11]) || 0,
-      qty37: parseInt(cols[12]) || 0,
-      reels40: parseInt(cols[13]) || 0,
-      qty40: parseInt(cols[14]) || 0,
-      totalReels: parseInt(cols[15]) || 0,
-      totalQty: parseInt(cols[16]) || 0,
+      reels635: nums[0] || 0,
+      qty635: nums[1] || 0,
+      reels7: nums[2] || 0,
+      qty7: nums[3] || 0,
+      reels8: nums[4] || 0,
+      qty8: nums[5] || 0,
+      reels9: nums[6] || 0,
+      qty9: nums[7] || 0,
+      reels12: nums[8] || 0,
+      qty12: nums[9] || 0,
+      reels37: nums[10] || 0,
+      qty37: nums[11] || 0,
+      reels40: nums[12] || 0,
+      qty40: nums[13] || 0,
+      totalReels: nums[14] || nums.filter((_, i) => i % 2 === 0 && i < 14).reduce((a, b) => a + b, 0),
+      totalQty: nums[15] || nums.filter((_, i) => i % 2 === 1 && i < 14).reduce((a, b) => a + b, 0),
     };
     
     // Only add if there's actual data
-    if (row.totalReels > 0 || row.totalQty > 0) {
+    if (row.totalReels > 0 || row.totalQty > 0 || row.reels635 > 0 || row.reels7 > 0) {
       data.push(row);
+      console.log("Parsed row:", row);
     }
   }
   
+  console.log(`Parsed ${data.length} rows from CSV`);
   return data;
 }
 
