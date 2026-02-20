@@ -131,6 +131,12 @@ export default function MasterPage() {
               You can also try copying the table content and saving as .csv file.
             </p>
           </div>
+
+          <div className="border-t pt-4 mt-4 bg-slate-50 p-3 rounded">
+            <p className="text-xs text-slate-500">
+              <span className="font-semibold">Last GitHub Update:</span> d0eef3e — 2026-02-20 08:18:38 +0200
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
