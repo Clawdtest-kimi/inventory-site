@@ -23,6 +23,17 @@ const handler = NextAuth({
   session: {
     strategy: "jwt",
   },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true
+      }
+    }
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.role = "admin"
