@@ -3,7 +3,6 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-// Logo size updated
 import Image from "next/image";
 
 export function Header() {
