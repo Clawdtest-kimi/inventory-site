@@ -1,9 +1,8 @@
 /**
  * Parses email (.eml) files and extracts the stock table data
- * Uses eml-format library + creative pattern extraction
+ * Client-side compatible - uses PapaParse + manual extraction
  */
 
-import * as emlformat from 'eml-format';
 import Papa from 'papaparse';
 
 export interface ParsedEmailData {
@@ -33,7 +32,7 @@ export async function parseStockFile(content: string, filename: string): Promise
   const lowerName = filename.toLowerCase();
   
   if (lowerName.endsWith('.eml')) {
-    return parseEMLWithLibrary(content);
+    return parseEML(content);
   }
   
   if (lowerName.endsWith('.csv')) {
@@ -51,203 +50,187 @@ export async function parseStockFile(content: string, filename: string): Promise
 }
 
 /**
- * Parse .eml using eml-format library + pattern extraction
+ * Parse .eml file - extract body and find table
  */
-async function parseEMLWithLibrary(content: string): Promise<ParsedEmailData[]> {
-  console.log("Parsing EML with eml-format library...");
+function parseEML(content: string): ParsedEmailData[] {
+  console.log("=== EML PARSER START ===");
+  console.log("File length:", content.length);
   
-  try {
-    // Use eml-format to parse the email
-    const parsed = await new Promise<any>((resolve, reject) => {
-      emlformat.read(content, (err: any, result: any) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
-    });
-    
-    console.log("EML parsed successfully");
-    console.log("Subject:", parsed.subject);
-    console.log("Has text:", !!parsed.text);
-    console.log("Has HTML:", !!parsed.html);
-    
-    // Try text body first
-    if (parsed.text) {
-      console.log("Text body preview:", parsed.text.substring(0, 500));
-      const data = parseCSVWithPapa(parsed.text);
-      if (data.length > 0) return data;
-      
-      const textData = parseTextTable(parsed.text);
-      if (textData.length > 0) return textData;
+  // Method 1: Extract and decode base64 content
+  const base64Decoded = extractBase64(content);
+  if (base64Decoded) {
+    console.log("Method 1 - Base64: extracted", base64Decoded.length, "chars");
+    const data = parseCSVWithPapa(base64Decoded);
+    if (data.length > 0) {
+      console.log("✅ Base64 parsing succeeded with", data.length, "rows");
+      return data;
     }
-    
-    // Try HTML body
-    if (parsed.html) {
-      console.log("HTML body found, extracting text...");
-      const textFromHtml = extractTextFromHTML(parsed.html);
-      console.log("Extracted from HTML:", textFromHtml.substring(0, 500));
-      
-      const data = parseCSVWithPapa(textFromHtml);
-      if (data.length > 0) return data;
-      
-      const textData = parseTextTable(textFromHtml);
-      if (textData.length > 0) return textData;
-      
-      // Try HTML table extraction
-      const htmlTableData = extractHTMLTable(parsed.html);
-      if (htmlTableData.length > 0) return htmlTableData;
-    }
-    
-  } catch (err) {
-    console.log("eml-format failed, trying fallback...", err);
   }
   
-  // Fallback: try manual extraction methods
-  return parseEMLManualFallback(content);
+  // Method 2: Extract and decode quoted-printable
+  const qpDecoded = extractQuotedPrintableFull(content);
+  if (qpDecoded) {
+    console.log("Method 2 - Quoted-Printable: extracted", qpDecoded.length, "chars");
+    const data = parseCSVWithPapa(qpDecoded);
+    if (data.length > 0) {
+      console.log("✅ QP parsing succeeded with", data.length, "rows");
+      return data;
+    }
+  }
+  
+  // Method 3: Extract plain text body
+  const plainText = extractPlainText(content);
+  if (plainText) {
+    console.log("Method 3 - Plain text: extracted", plainText.length, "chars");
+    const data = parseCSVWithPapa(plainText);
+    if (data.length > 0) {
+      console.log("✅ Plain text parsing succeeded with", data.length, "rows");
+      return data;
+    }
+  }
+  
+  // Method 4: Extract from HTML
+  const htmlText = extractFromHTML(content);
+  if (htmlText) {
+    console.log("Method 4 - HTML: extracted", htmlText.length, "chars");
+    const data = parseCSVWithPapa(htmlText);
+    if (data.length > 0) {
+      console.log("✅ HTML parsing succeeded with", data.length, "rows");
+      return data;
+    }
+  }
+  
+  // Method 5: Try raw content as CSV
+  console.log("Method 5 - Raw content as CSV");
+  const data = parseCSVWithPapa(content);
+  if (data.length > 0) {
+    console.log("✅ Raw parsing succeeded with", data.length, "rows");
+    return data;
+  }
+  
+  // Method 6: Text table parsing on decoded content
+  console.log("Method 6 - Text table parsing");
+  const decoded = decodeQuotedPrintable(content);
+  const textData = parseTextTable(decoded);
+  if (textData.length > 0) {
+    console.log("✅ Text table parsing succeeded with", textData.length, "rows");
+    return textData;
+  }
+  
+  console.log("❌ All parsing methods failed");
+  return [];
 }
 
 /**
- * Extract text from HTML
+ * Extract base64 encoded content from email
  */
-function extractTextFromHTML(html: string): string {
+function extractBase64(content: string): string | null {
+  // Look for base64 transfer encoding
+  const base64Sections = content.match(/Content-Transfer-Encoding:\s*base64[\s\S]*?(?:\r?\n){2}([A-Za-z0-9+/=\s]+?)(?=\r?\n--[\w-]+|\r?\n\r?\nContent-Disposition)/gi);
+  
+  if (!base64Sections) return null;
+  
+  for (const section of base64Sections) {
+    const match = section.match(/(?:\r?\n){2}([A-Za-z0-9+/=\s]+)/);
+    if (match) {
+      try {
+        const cleaned = match[1].replace(/\s/g, '');
+        const decoded = atob(cleaned);
+        if (decoded.includes('Width') || decoded.includes('width') || /\d{3,4}/.test(decoded)) {
+          return decoded;
+        }
+      } catch (e) {
+        // Ignore decode errors
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Extract quoted-printable content
+ */
+function extractQuotedPrintableFull(content: string): string | null {
+  const qpMatch = content.match(/Content-Transfer-Encoding:\s*quoted-printable[\s\S]*?(?:\r?\n){2}([\s\S]*?)(?=\r?\n--[\w-]+|\r?\n\r?\nContent-Disposition|$)/i);
+  if (qpMatch) {
+    return decodeQuotedPrintable(qpMatch[1]);
+  }
+  return null;
+}
+
+/**
+ * Extract plain text body
+ */
+function extractPlainText(content: string): string | null {
+  // Match text/plain sections
+  const textMatch = content.match(/Content-Type:\s*text\/plain[\s\S]*?(?:\r?\n){2}([\s\S]*?)(?=\r?\n--[\w-]+|\r?\n\r?\nContent-Disposition|$)/i);
+  if (textMatch) {
+    const decoded = decodeQuotedPrintable(textMatch[1]);
+    return decoded;
+  }
+  return null;
+}
+
+/**
+ * Extract content from HTML parts
+ */
+function extractFromHTML(content: string): string | null {
+  const htmlMatch = content.match(/Content-Type:\s*text\/html[\s\S]*?(?:\r?\n){2}([\s\S]*?)(?=\r?\n--[\w-]+|\r?\n\r?\nContent-Disposition|$)/i);
+  if (!htmlMatch) return null;
+  
+  const html = decodeQuotedPrintable(htmlMatch[1]);
+  
+  // Extract table data from HTML
+  const tableMatch = html.match(/<table[^>]*>([\s\S]*?)<\/table>/i);
+  if (tableMatch) {
+    const rows = tableMatch[1].match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi) || [];
+    const csvRows = rows.map(row => {
+      const cells = row.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || [];
+      return cells.map(cell => cell.replace(/<[^>]+>/g, '').trim()).join(',');
+    });
+    return csvRows.join('\n');
+  }
+  
+  // Fallback: just strip tags
   return html
-    .replace(/<table[^>]*>[\s\S]*?<\/table>/gi, (match) => {
-      // Convert table to CSV-like format
-      const rows = match.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
-      return rows.map(row => {
-        const cells = row.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || [];
-        return cells.map(cell => 
-          cell.replace(/<[^>]+>/g, '').trim()
-        ).join(',');
-      }).join('\n');
-    })
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 /**
- * Extract data from HTML table directly
+ * Decode quoted-printable
  */
-function extractHTMLTable(html: string): ParsedEmailData[] {
-  const data: ParsedEmailData[] = [];
+function decodeQuotedPrintable(text: string): string {
+  if (!text) return '';
   
-  // Find all tables
-  const tableMatch = html.match(/<table[^>]*>([\s\S]*?)<\/table>/i);
-  if (!tableMatch) return [];
+  // Handle soft line breaks
+  let result = text.replace(/=\r?\n/g, '');
   
-  const table = tableMatch[1];
-  const rows = table.match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi) || [];
+  // Decode =XX hex sequences
+  result = result.replace(/=([0-9A-Fa-f]{2})/g, (_match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16));
+  });
   
-  console.log(`Found ${rows.length} rows in HTML table`);
+  // Handle common encoded characters
+  result = result.replace(/=3D/g, '=');
+  result = result.replace(/=20/g, ' ');
+  result = result.replace(/=2C/g, ',');
+  result = result.replace(/=0D/g, '\r');
+  result = result.replace(/=0A/g, '\n');
+  result = result.replace(/=09/g, '\t');
   
-  for (const row of rows) {
-    const cells = row.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || [];
-    const values = cells.map(cell => {
-      const text = cell.replace(/<[^>]+>/g, '').trim();
-      return parseFloat(text) || 0;
-    }).filter(v => v > 0);
-    
-    if (values.length >= 2 && values[0] >= 100 && values[0] <= 2000) {
-      const width = values[0];
-      const nums = values.slice(1);
-      
-      const rowData: ParsedEmailData = {
-        width,
-        reels635: nums[0] || 0,
-        qty635: nums[1] || 0,
-        reels7: nums[2] || 0,
-        qty7: nums[3] || 0,
-        reels8: nums[4] || 0,
-        qty8: nums[5] || 0,
-        reels9: nums[6] || 0,
-        qty9: nums[7] || 0,
-        reels12: nums[8] || 0,
-        qty12: nums[9] || 0,
-        reels37: nums[10] || 0,
-        qty37: nums[11] || 0,
-        reels40: nums[12] || 0,
-        qty40: nums[13] || 0,
-        totalReels: nums[14] || 0,
-        totalQty: nums[15] || 0,
-      };
-      
-      if (rowData.totalReels > 0 || rowData.totalQty > 0) {
-        data.push(rowData);
-      }
-    }
-  }
-  
-  return data;
-}
-
-/**
- * Manual fallback for EML parsing
- */
-function parseEMLManualFallback(content: string): ParsedEmailData[] {
-  console.log("Using manual fallback...");
-  
-  // Try multiple extraction methods
-  const methods = [
-    extractBase64Content,
-    extractQuotedPrintable,
-    extractPlainText,
-    extractRawContent
-  ];
-  
-  for (const method of methods) {
-    const extracted = method(content);
-    if (extracted) {
-      console.log(`Method ${method.name} extracted ${extracted.length} chars`);
-      
-      let data = parseCSVWithPapa(extracted);
-      if (data.length > 0) return data;
-      
-      data = parseTextTable(extracted);
-      if (data.length > 0) return data;
-    }
-  }
-  
-  return [];
-}
-
-function extractBase64Content(content: string): string | null {
-  const match = content.match(/Content-Transfer-Encoding: base64[\s\S]*?\n\n([A-Za-z0-9+/=\s]+)/i);
-  if (match) {
-    try {
-      return Buffer.from(match[1].replace(/\s/g, ''), 'base64').toString('utf-8');
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-}
-
-function extractQuotedPrintable(content: string): string | null {
-  const match = content.match(/Content-Transfer-Encoding: quoted-printable[\s\S]*?\n\n([\s\S]*?)(?=\n--|$)/i);
-  if (match) {
-    return decodeQuotedPrintable(match[1]);
-  }
-  return null;
-}
-
-function extractPlainText(content: string): string | null {
-  const match = content.match(/Content-Type: text\/plain[\s\S]*?\n\n([\s\S]*?)(?=\n--|$)/i);
-  return match ? match[1] : null;
-}
-
-function extractRawContent(content: string): string {
-  return content;
+  return result;
 }
 
 /**
  * Parse CSV using PapaParse
  */
 function parseCSVWithPapa(csvContent: string): ParsedEmailData[] {
-  console.log("Parsing with PapaParse...");
+  console.log("PapaParse: input length", csvContent.length);
   
   const data: ParsedEmailData[] = [];
   let dataStarted = false;
@@ -255,19 +238,21 @@ function parseCSVWithPapa(csvContent: string): ParsedEmailData[] {
   const result = Papa.parse(csvContent, {
     skipEmptyLines: true,
     delimiter: ',',
-    quoteChar: '"'
+    quoteChar: '"',
+    delimitersToGuess: [',', '\t', ';', '|']
   });
   
-  console.log(`PapaParse found ${result.data.length} rows`);
+  console.log("PapaParse found", result.data.length, "rows");
   
   for (const row of result.data) {
-    if (!Array.isArray(row) || row.length < 3) continue;
+    if (!Array.isArray(row)) continue;
     
     const firstCol = row[0]?.toString().trim() || '';
     
-    // Check if this is a header row
+    // Detect header row
     if (firstCol.toLowerCase().includes('width') || 
-        firstCol.toLowerCase().includes('reels')) {
+        firstCol.toLowerCase().includes('reel') ||
+        firstCol.toLowerCase().includes('mm')) {
       dataStarted = true;
       continue;
     }
@@ -275,18 +260,24 @@ function parseCSVWithPapa(csvContent: string): ParsedEmailData[] {
     // Skip total row
     if (firstCol.toLowerCase().startsWith('total')) continue;
     
-    // Skip if data hasn't started
+    // Skip if before data
     if (!dataStarted) continue;
     
-    // Parse width
+    // Parse width (should be 100-2000)
     const width = parseFloat(firstCol);
     if (isNaN(width) || width < 100 || width > 2000) continue;
     
-    // Parse remaining columns as numbers
-    const nums = row.slice(1).map((v: any) => {
-      const n = parseInt(v);
-      return isNaN(n) ? 0 : n;
-    });
+    // Parse numbers from remaining columns
+    const nums: number[] = [];
+    for (let i = 1; i < row.length; i++) {
+      const val = row[i]?.toString().trim();
+      if (!val) {
+        nums.push(0);
+        continue;
+      }
+      const num = parseInt(val.replace(/,/g, ''));
+      nums.push(isNaN(num) ? 0 : num);
+    }
     
     const rowData: ParsedEmailData = {
       width,
@@ -308,49 +299,47 @@ function parseCSVWithPapa(csvContent: string): ParsedEmailData[] {
       totalQty: nums[15] || 0,
     };
     
-    // Check if row has actual data
-    const hasData = Object.entries(rowData).some(([k, v]) => 
-      k !== 'width' && typeof v === 'number' && v > 0
+    // Check if row has any actual data
+    const hasData = Object.values(rowData).some((v, i) => 
+      i > 0 && typeof v === 'number' && v > 0
     );
     
     if (hasData) {
       data.push(rowData);
-      console.log("Parsed row:", rowData);
+      console.log("Parsed row:", rowData.width, "mm,", rowData.totalReels, "reels");
     }
   }
   
-  console.log(`PapaParse returned ${data.length} valid rows`);
+  console.log("PapaParse returning", data.length, "valid rows");
   return data;
 }
 
 /**
- * Parse text table format
+ * Parse text table format (fallback)
  */
 function parseTextTable(text: string): ParsedEmailData[] {
-  console.log("Parsing as text table...");
+  console.log("Text table parser: input length", text.length);
+  
   const data: ParsedEmailData[] = [];
   const lines = text.split(/\r?\n/);
   
   for (const line of lines) {
     const trimmed = line.trim();
+    if (!trimmed) continue;
     
-    // Skip header/total rows
-    if (!trimmed || 
-        trimmed.toLowerCase().startsWith('width') || 
-        trimmed.toLowerCase().startsWith('total') ||
-        trimmed.toLowerCase().startsWith('reels')) continue;
+    // Skip headers
+    if (/^width|reel|mm|total/i.test(trimmed)) continue;
     
-    // Look for width at start (3-4 digits)
-    const widthMatch = trimmed.match(/^(\d{3,4})\b/);
-    if (!widthMatch) continue;
+    // Look for lines starting with width (3-4 digits)
+    const match = trimmed.match(/^(\d{3,4})\s+([\d\s,\.]+)/);
+    if (!match) continue;
     
-    const width = parseInt(widthMatch[1]);
+    const width = parseInt(match[1]);
+    const rest = match[2];
     
-    // Extract all numbers from the line
-    const numbers = trimmed.match(/\b\d+\b/g);
-    if (!numbers || numbers.length < 10) continue;
-    
-    const nums = numbers.slice(1).map(n => parseInt(n) || 0);
+    // Extract all numbers
+    const nums = rest.match(/\d+/g)?.map(n => parseInt(n)) || [];
+    if (nums.length < 2) continue;
     
     const rowData: ParsedEmailData = {
       width,
@@ -368,33 +357,15 @@ function parseTextTable(text: string): ParsedEmailData[] {
       qty37: nums[11] || 0,
       reels40: nums[12] || 0,
       qty40: nums[13] || 0,
-      totalReels: nums[14] || 0,
-      totalQty: nums[15] || 0,
+      totalReels: nums[14] || nums.slice(0, 14).filter((_, i) => i % 2 === 0).reduce((a, b) => a + b, 0),
+      totalQty: nums[15] || nums.slice(0, 14).filter((_, i) => i % 2 === 1).reduce((a, b) => a + b, 0),
     };
     
-    const hasData = Object.entries(rowData).some(([k, v]) => 
-      k !== 'width' && typeof v === 'number' && v > 0
-    );
-    
-    if (hasData) {
+    if (rowData.totalReels > 0 || rowData.totalQty > 0) {
       data.push(rowData);
     }
   }
   
-  console.log(`Text table returned ${data.length} rows`);
+  console.log("Text table returning", data.length, "rows");
   return data;
-}
-
-/**
- * Decodes quoted-printable encoding
- */
-function decodeQuotedPrintable(text: string): string {
-  let result = text.replace(/=\r?\n/g, '');
-  result = result.replace(/=([0-9A-Fa-f]{2})/g, (_match, hex) => {
-    return String.fromCharCode(parseInt(hex, 16));
-  });
-  result = result.replace(/=3D/g, '=');
-  result = result.replace(/=20/g, ' ');
-  result = result.replace(/=2C/g, ',');
-  return result;
 }
