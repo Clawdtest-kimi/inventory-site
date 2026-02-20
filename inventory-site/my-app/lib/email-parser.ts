@@ -175,7 +175,7 @@ function parseCSV(csvContent: string): ParsedEmailData[] {
     };
     
     // Only add if there's actual data
-    if (row.totalReels > 0 || row.totalQty > 0 || row.reels635 > 0 || row.reels7 > 0) {
+    if (row.totalReels > 0 || row.totalQty > 0 || (row.reels635 || 0) > 0 || (row.reels7 || 0) > 0) {
       data.push(row);
       console.log("Parsed row:", row);
     }
