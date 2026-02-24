@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,9 @@ export default function MasterPage() {
   }, []);
 
   // Load upload log from localStorage and Redis
-  const loadLogs = useCallback(async () => {
+  const loadLogs = async () => {
     setUploading(true);
+    setMessage("");
     
     // Load local uploads
     const saved = localStorage.getItem("uploadLog");
@@ -60,7 +61,7 @@ export default function MasterPage() {
     
     // Load email uploads from Redis
     try {
-      const res = await fetch("/api/email");
+      const res = await fetch("/api/email?t=" + Date.now()); // Cache buster
       const data = await res.json();
       
       if (data.hasData && data.data) {
@@ -106,11 +107,15 @@ export default function MasterPage() {
     }
     
     setUploading(false);
-  }, []);
+  };
   
+  // Initial load only once
   useEffect(() => {
-    loadLogs();
-  }, [loadLogs]);
+    if (session) {
+      loadLogs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   const addToLog = (entry: UploadLog) => {
     setUploadLog(prev => {
@@ -318,7 +323,7 @@ export default function MasterPage() {
                 disabled={uploading}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${uploading ? 'animate-spin' : ''}`} />
-                Refresh
+                Upload
               </Button>
             </div>
             
