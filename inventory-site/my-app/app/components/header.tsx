@@ -40,7 +40,7 @@ export function Header() {
                   href="/master" 
                   className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
                 >
-                  Master Upload
+                  Upload
                 </Link>
                 <Link 
                   href="/imap-config" 

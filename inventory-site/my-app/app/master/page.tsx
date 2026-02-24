@@ -323,7 +323,7 @@ export default function MasterPage() {
                 disabled={uploading}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${uploading ? 'animate-spin' : ''}`} />
-                Upload
+                Refresh
               </Button>
             </div>
             
