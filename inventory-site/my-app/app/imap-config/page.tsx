@@ -197,16 +197,6 @@ export default function IMAPConfigPage() {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-4">
-            <Button onClick={handleTestConnection} disabled={loading} variant="outline">
-              Test Vercel API
-            </Button>
-            <Button onClick={handlePollNow} disabled={loading}>
-              Poll Now (Vercel)
-            </Button>
-          </div>
-
           {message && (
             <div className={`p-4 rounded-lg whitespace-pre-line ${message.includes("✅") ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
               {message}
@@ -218,8 +208,6 @@ export default function IMAPConfigPage() {
             <h3 className="font-semibold text-blue-900">Local Poller Setup (Mac)</h3>
             
             <div className="text-sm text-blue-800 space-y-2">
-              <p className="bg-yellow-100 p-2 rounded"><strong>Note:</strong> Vercel blocks IMAP connections. The poller runs on your Mac and posts data to the site.</p>
-              
               <p><strong>1. Email configured:</strong> <code>stock@packaging.team</code></p>
               
               <p><strong>2. Current settings:</strong></p>

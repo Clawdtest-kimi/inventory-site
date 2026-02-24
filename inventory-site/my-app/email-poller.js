@@ -50,8 +50,15 @@ async function pollEmail() {
       markSeen: false
     };
     
-    const messages = await connection.search(searchCriteria, fetchOptions);
+    let messages = await connection.search(searchCriteria, fetchOptions);
     console.log(`📨 Found ${messages.length} emails`);
+    
+    // Sort by date descending (newest first)
+    messages = messages.sort((a, b) => {
+      const dateA = new Date(a.parts.find(p => p.which === 'HEADER.FIELDS (FROM TO SUBJECT DATE)')?.body.date?.[0] || 0);
+      const dateB = new Date(b.parts.find(p => p.which === 'HEADER.FIELDS (FROM TO SUBJECT DATE)')?.body.date?.[0] || 0);
+      return dateB - dateA; // Newest first
+    });
     
     let processedCount = 0;
     
@@ -148,52 +155,116 @@ async function pollEmail() {
 
 /**
  * Parse stock table from email text
- * Extracts lines with just numbers and groups them by width
+ * Handles HTML emails by extracting table rows
+ * Skips only the row where width column contains "Total"
  */
 function parseStockTable(text) {
   const rows = [];
   
-  // Split into lines and find those containing just a number
-  const lines = text.split(/\r?\n/);
-  const numLines = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    // Match lines with just a number (and optional whitespace)
-    const match = line.match(/^\s*(\d+)\s*$/);
-    if (match) {
-      numLines.push({ line: i, num: parseInt(match[1]) });
-    }
+  // Find table body content
+  const tbodyMatch = text.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
+  if (!tbodyMatch) {
+    console.log('   ⚠️ No table body found');
+    return rows;
   }
   
-  let currentWidth = null;
-  let values = [];
+  const tbodyContent = tbodyMatch[1];
   
-  for (const { num } of numLines) {
-    // Check if this is a known width
-    if (KNOWN_WIDTHS.includes(num)) {
-      // Save previous row
-      if (currentWidth && values.length >= 2) {
-        const row = buildRow(currentWidth, values);
-        if (row) rows.push(row);
-      }
-      
-      // Start new row
-      currentWidth = num;
-      values = [];
-    } else if (currentWidth !== null) {
-      // Collect values for current row
-      values.push(num);
-    }
+  // Split into table rows
+  const rowMatches = tbodyContent.match(/<tr[\s\S]*?<\/tr>/gi);
+  if (!rowMatches) {
+    console.log('   ⚠️ No table rows found');
+    return rows;
   }
   
-  // Don't forget last row
-  if (currentWidth && values.length >= 2) {
-    const row = buildRow(currentWidth, values);
-    if (row) rows.push(row);
+  console.log(`   📊 Found ${rowMatches.length} table rows`);
+  
+  for (const rowHtml of rowMatches) {
+    // Decode quoted-printable in this row
+    let decoded = rowHtml
+      .replace(/=\r?\n/g, '')
+      .replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    
+    // Remove HTML tags
+    const textContent = decoded.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    
+    // Check if this is the Total row (contains "Total" text)
+    if (textContent.toLowerCase().includes('total')) {
+      console.log('   🚫 Skipping Total row');
+      continue;
+    }
+    
+    // Extract all numbers
+    const numbers = textContent.match(/\b\d+\b/g);
+    if (!numbers || numbers.length < 3) continue;
+    
+    // First number should be width
+    const width = parseInt(numbers[0]);
+    
+    // Check if it's a known width
+    if (!KNOWN_WIDTHS.includes(width)) continue;
+    
+    // Build row from remaining numbers
+    const row = buildRowFromNumbers(width, numbers.slice(1));
+    if (row) {
+      rows.push(row);
+      console.log(`   ✓ Width ${width}: ${row.totalReels} reels`);
+    }
   }
   
   return rows;
+}
+
+/**
+ * Build a row object from width and array of numbers
+ * Numbers come in pairs: (reels, qty) for each thickness column
+ */
+function buildRowFromNumbers(width, numbers) {
+  const row = { width, totalReels: 0, totalQty: 0 };
+  
+  // Expected thickness order in the table
+  const thicknessOrder = ['635', '7', '8', '9', '12', '37', '40'];
+  
+  // Get expected structure for this width
+  const expected = EXPECTED_DATA[width];
+  
+  if (!expected) {
+    // Fallback: assign sequentially
+    for (let i = 0; i < numbers.length - 1; i += 2) {
+      const reels = parseInt(numbers[i]) || 0;
+      const qty = parseInt(numbers[i + 1]) || 0;
+      if (reels > 0) {
+        const thickness = thicknessOrder[Math.floor(i / 2)];
+        if (thickness) {
+          row[`reels${thickness}`] = reels;
+          row[`qty${thickness}`] = qty;
+        }
+      }
+    }
+  } else {
+    // Map to expected columns
+    let numIdx = 0;
+    for (const thickness of thicknessOrder) {
+      if (expected[`has${thickness}`] && numIdx < numbers.length - 1) {
+        const reels = parseInt(numbers[numIdx]) || 0;
+        const qty = parseInt(numbers[numIdx + 1]) || 0;
+        numIdx += 2;
+        
+        if (reels > 0) {
+          row[`reels${thickness}`] = reels;
+          row[`qty${thickness}`] = qty;
+        }
+      }
+    }
+  }
+  
+  // Calculate totals from the last two numbers if present
+  if (numbers.length >= 2) {
+    row.totalReels = parseInt(numbers[numbers.length - 2]) || 0;
+    row.totalQty = parseInt(numbers[numbers.length - 1]) || 0;
+  }
+  
+  return row;
 }
 
 // Expected data structure for mapping email values to correct columns
@@ -229,49 +300,5 @@ const EXPECTED_DATA = {
   1220: { has8: true },
   1445: { has635: true }
 };
-
-function buildRow(width, values) {
-  const row = { width };
-  
-  // Last two values are totals
-  const lastTwo = values.slice(-2);
-  row.totalReels = lastTwo[0] || 0;
-  row.totalQty = lastTwo[1] || 0;
-  
-  // Get expected structure for this width
-  const expected = EXPECTED_DATA[width];
-  if (!expected) {
-    // Fallback: just assign to first available columns
-    const thicknessKeys = ['635', '7', '8', '9', '12', '37', '40'];
-    const dataValues = values.slice(0, -2);
-    for (let i = 0; i < dataValues.length - 1; i += 2) {
-      const reels = dataValues[i];
-      const qty = dataValues[i + 1];
-      if (reels > 0) {
-        const pairIndex = Math.floor(i / 2);
-        if (pairIndex < thicknessKeys.length) {
-          row[`reels${thicknessKeys[pairIndex]}`] = reels;
-          row[`qty${thicknessKeys[pairIndex]}`] = qty;
-        }
-      }
-    }
-    return row;
-  }
-  
-  // Map values to expected columns
-  const dataValues = values.slice(0, -2);
-  let valIdx = 0;
-  
-  const thicknessOrder = ['635', '7', '8', '9', '12', '37', '40'];
-  
-  for (const thickness of thicknessOrder) {
-    if (expected[`has${thickness}`] && valIdx < dataValues.length - 1) {
-      row[`reels${thickness}`] = dataValues[valIdx++] || 0;
-      row[`qty${thickness}`] = dataValues[valIdx++] || 0;
-    }
-  }
-  
-  return row;
-}
 
 pollEmail();
