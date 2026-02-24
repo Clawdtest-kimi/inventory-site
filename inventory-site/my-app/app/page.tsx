@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, RotateCcw, RefreshCw } from "lucide-react";
+import { Search, RotateCcw } from "lucide-react";
 
 // Default stock data from the CSV file
 const DEFAULT_CSV = `Width (mm),6.35µ,7µ,8µ,9µ,12µ,37µ,40µ,Total,,,,,,,,
@@ -404,22 +404,11 @@ export default function HomePage() {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                {thickness !== "all" && (
-                  <div className="text-sm text-slate-600">
-                    Showing data for <span className="font-medium">{thickness}µ</span> thickness
-                  </div>
-                )}
-                <Button 
-                  onClick={loadData} 
-                  size="sm" 
-                  variant="outline"
-                  disabled={loading}
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-              </div>
+              {thickness !== "all" && (
+                <div className="text-sm text-slate-600">
+                  Showing data for <span className="font-medium">{thickness}µ</span> thickness
+                </div>
+              )}
             </div>
 
             {filteredData.length > 0 ? (
