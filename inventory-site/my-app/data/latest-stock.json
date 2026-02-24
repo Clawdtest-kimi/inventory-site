@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-02-24T07:31:53.262Z",
-  "subject": "Fwd: Fw: Daily Report of Free Stock - Hungary Aluminium foil on 02-Feb-2026",
+  "timestamp": "2026-02-24T07:48:43.449Z",
+  "subject": "Fwd: test1 stock report",
   "from": "\"stock@packaging.team stock@packaging.team\" <stock@packaging.team>",
   "data": [
     {
@@ -12,12 +12,12 @@
     },
     {
       "width": 700,
-      "totalReels": 64,
-      "totalQty": 21659,
+      "totalReels": 21,
+      "totalQty": 659,
       "reels8": 44,
-      "qty8": 13381,
-      "reels37": 20,
-      "qty37": 8278
+      "qty8": 13,
+      "reels37": 381,
+      "qty37": 20
     },
     {
       "width": 735,
@@ -28,209 +28,133 @@
     },
     {
       "width": 770,
-      "totalReels": 4,
-      "totalQty": 1550,
+      "totalReels": 1,
+      "totalQty": 550,
       "reels635": 4,
-      "qty635": 1550
+      "qty635": 1
     },
     {
       "width": 780,
-      "totalReels": 4,
-      "totalQty": 1640,
+      "totalReels": 1,
+      "totalQty": 640,
       "reels8": 4,
-      "qty8": 1640
+      "qty8": 1
     },
     {
       "width": 830,
-      "totalReels": 3,
-      "totalQty": 1365,
+      "totalReels": 1,
+      "totalQty": 365,
       "reels9": 3,
-      "qty9": 1365
+      "qty9": 1
     },
     {
       "width": 860,
-      "totalReels": 10,
-      "totalQty": 4569,
+      "totalReels": 4,
+      "totalQty": 569,
       "reels7": 8,
-      "qty7": 3571,
-      "reels8": 2,
-      "qty8": 998
-    },
-    {
-      "width": 865,
-      "totalReels": 14,
-      "totalQty": 7667,
-      "reels635": 2,
-      "qty635": 915,
-      "reels7": 12,
-      "qty7": 6752
-    },
-    {
-      "width": 870,
-      "totalReels": 15,
-      "totalQty": 7472,
-      "reels7": 1,
-      "qty7": 495,
-      "reels8": 14,
-      "qty8": 6977
-    },
-    {
-      "width": 900,
-      "totalReels": 3,
-      "totalQty": 1746,
-      "reels7": 3,
-      "qty7": 1746
-    },
-    {
-      "width": 920,
-      "totalReels": 12,
-      "totalQty": 7172,
-      "reels7": 6,
-      "qty7": 3694,
-      "reels8": 4,
-      "qty8": 2270,
-      "reels9": 2,
-      "qty9": 1208
-    },
-    {
-      "width": 960,
-      "totalReels": 10,
-      "totalQty": 5537,
-      "reels9": 10,
-      "qty9": 5537
-    },
-    {
-      "width": 970,
-      "totalReels": 2,
-      "totalQty": 1269,
-      "reels8": 2,
-      "qty8": 1269
-    },
-    {
-      "width": 980,
-      "totalReels": 11,
-      "totalQty": 6067,
-      "reels7": 2,
-      "qty7": 1085,
-      "reels8": 7,
-      "qty8": 3789,
-      "reels9": 2,
-      "qty9": 1193
-    },
-    {
-      "width": 990,
-      "totalReels": 10,
-      "totalQty": 6066,
-      "reels8": 10,
-      "qty8": 6066
-    },
-    {
-      "width": 1010,
-      "totalReels": 39,
-      "totalQty": 22340,
-      "reels7": 10,
-      "qty7": 5234,
-      "reels8": 10,
-      "qty8": 4408,
-      "reels12": 1,
-      "qty12": 599,
-      "reels37": 10,
-      "qty37": 6136,
-      "reels40": 8,
-      "qty40": 5963
+      "qty7": 3,
+      "reels8": 571,
+      "qty8": 2
     },
     {
       "width": 1020,
-      "totalReels": 3,
-      "totalQty": 1792,
+      "totalReels": 1,
+      "totalQty": 792,
       "reels8": 3,
-      "qty8": 1792
+      "qty8": 1
     },
     {
       "width": 1050,
-      "totalReels": 4,
-      "totalQty": 2042,
+      "totalReels": 2,
+      "totalQty": 42,
       "reels7": 4,
-      "qty7": 2042
+      "qty7": 2
     },
     {
       "width": 1067,
-      "totalReels": 5,
-      "totalQty": 2796,
+      "totalReels": 2,
+      "totalQty": 796,
       "reels635": 5,
-      "qty635": 2796
+      "qty635": 2
     },
     {
       "width": 1070,
-      "totalReels": 8,
-      "totalQty": 5040,
+      "totalReels": 5,
+      "totalQty": 40,
       "reels8": 8,
-      "qty8": 5040
+      "qty8": 5
     },
     {
       "width": 1080,
-      "totalReels": 8,
-      "totalQty": 4614,
+      "totalReels": 4,
+      "totalQty": 614,
       "reels9": 8,
-      "qty9": 4614
+      "qty9": 4
     },
     {
       "width": 1090,
-      "totalReels": 5,
-      "totalQty": 3035,
+      "totalReels": 3,
+      "totalQty": 35,
       "reels7": 5,
-      "qty7": 3035
+      "qty7": 3
     },
     {
       "width": 1116,
-      "totalReels": 11,
-      "totalQty": 7311,
+      "totalReels": 7,
+      "totalQty": 311,
       "reels635": 11,
-      "qty635": 7311
+      "qty635": 7
     },
     {
       "width": 1120,
-      "totalReels": 12,
-      "totalQty": 7561,
+      "totalReels": 7,
+      "totalQty": 561,
       "reels7": 8,
-      "qty7": 4882,
-      "reels8": 4,
-      "qty8": 2679
+      "qty7": 4,
+      "reels8": 882,
+      "qty8": 4
     },
     {
       "width": 1140,
-      "totalReels": 2,
-      "totalQty": 1091,
+      "totalReels": 1,
+      "totalQty": 91,
       "reels8": 2,
-      "qty8": 1091
+      "qty8": 1
     },
     {
       "width": 1160,
-      "totalReels": 2,
-      "totalQty": 1254,
+      "totalReels": 1,
+      "totalQty": 254,
       "reels9": 2,
-      "qty9": 1254
+      "qty9": 1
     },
     {
       "width": 1180,
-      "totalReels": 8,
-      "totalQty": 5458,
+      "totalReels": 5,
+      "totalQty": 458,
       "reels8": 8,
-      "qty8": 5458
+      "qty8": 5
     },
     {
       "width": 1200,
-      "totalReels": 2,
-      "totalQty": 1254,
+      "totalReels": 1,
+      "totalQty": 254,
       "reels635": 2,
-      "qty635": 1254
+      "qty635": 1
     },
     {
       "width": 1220,
-      "totalReels": 4,
-      "totalQty": 2364,
+      "totalReels": 2,
+      "totalQty": 364,
       "reels8": 4,
-      "qty8": 2364
+      "qty8": 2
+    },
+    {
+      "width": 1445,
+      "totalReels": 7,
+      "totalQty": 824,
+      "reels635": 11,
+      "qty635": 7
     }
   ]
 }
