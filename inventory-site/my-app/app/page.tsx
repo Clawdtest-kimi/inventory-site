@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, RotateCcw } from "lucide-react";
+import { Search } from "lucide-react";
 
 // Default stock data from the CSV file
 const DEFAULT_CSV = `Width (mm),6.35µ,7µ,8µ,9µ,12µ,37µ,40µ,Total,,,,,,,,
@@ -283,14 +283,6 @@ export default function HomePage() {
     setShowResults(true);
   };
 
-  const handleReset = () => {
-    setAluType("all");
-    setAlloy("all");
-    setThickness("all");
-    setWidth("all");
-    setShowResults(false);
-  };
-
   const getThicknessData = (row: StockRow, thick: string) => {
     const map: Record<string, { reels: number; qty: number }> = {
       "6.35": { reels: row.reels635 || 0, qty: row.qty635 || 0 },
@@ -375,15 +367,10 @@ export default function HomePage() {
 
             {/* Search Button */}
             <div className="space-y-2 flex flex-col justify-end">
-              <div className="flex gap-2">
-                <Button onClick={handleSearch} className="flex-1">
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-                <Button variant="outline" onClick={handleReset} size="icon">
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-              </div>
+              <Button onClick={handleSearch} className="w-full">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
             </div>
           </div>
         </CardContent>
