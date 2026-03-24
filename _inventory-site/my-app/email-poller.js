@@ -9,9 +9,10 @@ const fs = require('fs');
 const path = require('path');
 
 // Config - Namecheap Private Email
+// Get from environment variables or .env file
 const IMAP_CONFIG = {
-  user: 'stock@packaging.team',
-  password: 'Bucharest@2027',
+  user: process.env.IMAP_USER || 'stock@packaging.team',
+  password: process.env.IMAP_PASSWORD || '',
   host: 'mail.privateemail.com',
   port: 993,
   tls: true,

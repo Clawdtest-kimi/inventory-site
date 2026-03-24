@@ -14,12 +14,28 @@ The IMAP Email Poller automatically checks the `stock@packaging.team` email inbo
 
 ## Configuration
 
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+IMAP_USER=stock@packaging.team
+IMAP_PASSWORD=your_password_here
+```
+
+Or set environment variables:
+
+```bash
+export IMAP_USER="stock@packaging.team"
+export IMAP_PASSWORD="your_password_here"
+```
+
 ### Email Settings (Namecheap Private Email)
 
 ```javascript
 const IMAP_CONFIG = {
-  user: 'stock@packaging.team',
-  password: 'Bucharest@2027',
+  user: process.env.IMAP_USER,
+  password: process.env.IMAP_PASSWORD,
   host: 'mail.privateemail.com',
   port: 993,
   tls: true,
@@ -116,7 +132,8 @@ After successful parsing:
 
 ### Check Email Connection
 ```bash
-node -e "require('imap-simple').connect({imap:{user:'stock@packaging.team',password:'Bucharest@2027',host:'mail.privateemail.com',port:993,tls:true}}).then(c=>{console.log('✅ Connected');c.end()})"
+# After setting IMAP_PASSWORD environment variable
+node -e "require('imap-simple').connect({imap:{user:'stock@packaging.team',password:process.env.IMAP_PASSWORD,host:'mail.privateemail.com',port:993,tls:true}}).then(c=>{console.log('✅ Connected');c.end()})"
 ```
 
 ### Debug Email Content
@@ -131,9 +148,11 @@ openclaw cron runs --limit 10
 
 ## Security Notes
 
-- Password stored in plain text in `email-poller.js`
-- For production, move to environment variables
-- Token-based authentication recommended for API
+- **Never commit passwords to GitHub**
+- Use environment variables or `.env` files (add to `.gitignore`)
+- Consider using a password manager for secure storage
+- Rotate passwords regularly
+- Use app-specific passwords if available
 
 ## License
 
