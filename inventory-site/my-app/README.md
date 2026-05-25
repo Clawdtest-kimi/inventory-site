@@ -99,3 +99,4 @@ my-app/
 - Data is stored in browser localStorage (demo purposes)
 - For production, connect to a real database
 - CSV upload overwrites existing data
+Build timestamp Mon May 25 15:39:09 EEST 2026
