@@ -84,24 +84,43 @@ export default function HomePage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/email");
-      const apiData = await res.json();
-      
-      if (apiData.hasData && apiData.data) {
-        console.log("Loaded from Redis:", apiData.data.length, "rows");
-        setData(apiData.data);
-        setLastUpdated(apiData.updatedAt);
-        localStorage.setItem("inventoryData", JSON.stringify(apiData.data));
-        localStorage.setItem("inventoryUpdated", apiData.updatedAt);
-      } else {
-        const saved = localStorage.getItem("inventoryData");
-        if (saved) {
-          setData(JSON.parse(saved));
-          setLastUpdated(localStorage.getItem("inventoryUpdated"));
-        } else {
-          const parsed = parseStockCSV(DEFAULT_CSV);
-          setData(parsed.data);
+      // Load from static JSON file (updated by IMAP poller)
+      const res = await fetch("/latest-stock.json");
+      if (res.ok) {
+        const stockData = await res.json();
+        console.log("Loaded from latest-stock.json:", stockData.data?.length, "rows");
+        
+        if (stockData.data && stockData.data.length > 0) {
+          // Convert to StockRow format
+          const rows: StockRow[] = stockData.data.map((r: any) => ({
+            width: r.width,
+            totalReels: r.totalReels,
+            totalQty: r.totalQty,
+            reels635: 0, qty635: 0,
+            reels7: 0, qty7: 0,
+            reels8: 0, qty8: 0,
+            reels9: 0, qty9: 0,
+            reels12: 0, qty12: 0,
+            reels37: 0, qty37: 0,
+            reels40: 0, qty40: 0,
+          }));
+          setData(rows);
+          setLastUpdated(stockData.timestamp || stockData.emailDate || null);
+          localStorage.setItem("inventoryData", JSON.stringify(rows));
+          localStorage.setItem("inventoryUpdated", stockData.timestamp || stockData.emailDate || "");
+          setLoading(false);
+          return;
         }
+      }
+      
+      // Fallback: try localStorage, then DEFAULT_CSV
+      const saved = localStorage.getItem("inventoryData");
+      if (saved) {
+        setData(JSON.parse(saved));
+        setLastUpdated(localStorage.getItem("inventoryUpdated"));
+      } else {
+        const parsed = parseStockCSV(DEFAULT_CSV);
+        setData(parsed.data);
       }
     } catch {
       const saved = localStorage.getItem("inventoryData");
