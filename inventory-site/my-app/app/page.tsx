@@ -91,18 +91,25 @@ export default function HomePage() {
         console.log("Loaded from latest-stock.json:", stockData.data?.length, "rows");
         
         if (stockData.data && stockData.data.length > 0) {
-          // Convert to StockRow format
+          // Convert to StockRow format — map thicknesses from nested JSON
           const rows: StockRow[] = stockData.data.map((r: any) => ({
             width: r.width,
             totalReels: r.totalReels,
             totalQty: r.totalQty,
-            reels635: 0, qty635: 0,
-            reels7: 0, qty7: 0,
-            reels8: 0, qty8: 0,
-            reels9: 0, qty9: 0,
-            reels12: 0, qty12: 0,
-            reels37: 0, qty37: 0,
-            reels40: 0, qty40: 0,
+            reels635: r.thicknesses?.["6.35"]?.reels || 0,
+            qty635: r.thicknesses?.["6.35"]?.qty || 0,
+            reels7: r.thicknesses?.["7"]?.reels || 0,
+            qty7: r.thicknesses?.["7"]?.qty || 0,
+            reels8: r.thicknesses?.["8"]?.reels || 0,
+            qty8: r.thicknesses?.["8"]?.qty || 0,
+            reels9: r.thicknesses?.["9"]?.reels || 0,
+            qty9: r.thicknesses?.["9"]?.qty || 0,
+            reels12: r.thicknesses?.["12"]?.reels || 0,
+            qty12: r.thicknesses?.["12"]?.qty || 0,
+            reels37: r.thicknesses?.["37"]?.reels || 0,
+            qty37: r.thicknesses?.["37"]?.qty || 0,
+            reels40: r.thicknesses?.["40"]?.reels || 0,
+            qty40: r.thicknesses?.["40"]?.qty || 0,
           }));
           setData(rows);
           setLastUpdated(stockData.timestamp || stockData.emailDate || null);
