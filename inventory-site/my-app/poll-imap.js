@@ -124,16 +124,17 @@ async function pollOnce() {
     console.log(`     From: ${newest.from}`);
     console.log(`     Date: ${newest.date}`);
     
-    const stockData = parseStockTable(newest.text);
+    const parsed = parseStockTable(newest.text);
     
-    if (stockData.length === 0) {
+    if (!parsed || !parsed.dataRows || parsed.dataRows.length === 0) {
       console.log('  ⚠️ No stock table found in email');
       await connection.end();
       return;
     }
     
-    const totalReels = stockData.reduce((sum, r) => sum + (r.totalReels || 0), 0);
-    const totalQty = stockData.reduce((sum, r) => sum + (r.totalQty || 0), 0);
+    const stockData = parsed.dataRows;
+    const totalReels = parsed.totals?.totalReels || stockData.reduce((s, r) => s + (r.totalReels || 0), 0);
+    const totalQty = parsed.totals?.totalQty || stockData.reduce((s, r) => s + (r.totalQty || 0), 0);
     console.log(`  ✅ Parsed ${stockData.length} rows — ${totalReels} reels, ${totalQty} kg total`);
     
     // Save locally
@@ -142,8 +143,10 @@ async function pollOnce() {
       subject: newest.subject,
       from: newest.from,
       emailDate: newest.date,
+      thicknesses: parsed.thicknesses,
       totalReels,
       totalQty,
+      totals: parsed.totals,
       data: stockData
     };
     
@@ -162,7 +165,7 @@ async function pollOnce() {
       const status = execSync('git status --porcelain', { cwd: REPO_DIR, encoding: 'utf8' }).trim();
       
       if (status) {
-        execSync(`git add inventory-site/my-app/data/latest-stock.json`, { cwd: REPO_DIR });
+        execSync(`git add inventory-site/my-app/data/latest-stock.json inventory-site/my-app/public/latest-stock.json`, { cwd: REPO_DIR });
         execSync(`git commit -m "data: auto-update from email - ${now} - ${totalReels} rolls"`, { cwd: REPO_DIR });
         execSync('git push origin main', { cwd: REPO_DIR, timeout: 30000 });
         console.log('  ✓ Committed & pushed to GitHub');
@@ -183,97 +186,206 @@ async function pollOnce() {
 }
 
 // ─── Parser ───────────────────────────────────────────────
+
+// Thickness columns in order as they appear in the SRF stock email
+const THICKNESS_KEYS = ['6.35', '7', '8', '9', '12', '37', '40'];
+
 function parseStockTable(text) {
-  const rows = [];
-  
   // Decode quoted-printable
   let decoded = text
     .replace(/=\r?\n/g, '')
     .replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
-  
-  // Find table body
-  const tbodyMatch = decoded.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
-  if (!tbodyMatch) {
-    // Try plain text table parsing
+
+  // Find HTML table
+  const tableMatch = decoded.match(/<table[\s\S]*?<\/table>/i);
+  if (!tableMatch) {
     return parsePlainTextTable(decoded);
   }
-  
-  const tbodyContent = tbodyMatch[1];
-  const rowMatches = tbodyContent.match(/<tr[\s\S]*?<\/tr>/gi);
-  if (!rowMatches) {
-    console.log('  ⚠️ No table rows found in tbody');
-    return rows;
+
+  const tableHtml = tableMatch[0];
+
+  // Extract all rows from the table (both thead and tbody)
+  const allRows = tableHtml.match(/<tr[\s\S]*?<\/tr>/gi);
+  if (!allRows) {
+    console.log('  ⚠️ No <tr> found in table');
+    return [];
   }
-  
-  console.log(`  📊 Found ${rowMatches.length} HTML table rows`);
-  
-  for (const rowHtml of rowMatches) {
-    // Remove HTML tags, get text content
-    const textContent = rowHtml
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/\s+/g, ' ')
-      .trim();
-    
-    // Skip Total row
-    if (textContent.toLowerCase().includes('total')) {
+
+  // Extract thickness headers from the first header row
+  // Look for <th> with µ character
+  const thicknessHeaders = [];
+  const headerRow1Match = allRows[0].match(/<th[^>]*>([\s\S]*?)<\/th>/gi);
+  if (headerRow1Match) {
+    for (const th of headerRow1Match) {
+      const text = th.replace(/<[^>]+>/g, '').trim();
+      // Extract thickness value: "6.35µ" -> "6.35", "7µ" -> "7", "Total" -> skip, "Width (mm)" -> skip
+      const m = text.match(/([\d.]+)\s*µ?/);
+      if (m && !text.toLowerCase().includes('width') && !text.toLowerCase().includes('total')) {
+        thicknessHeaders.push(m[1]);
+      }
+    }
+  }
+
+  // Use THICKNESS_KEYS as fallback if headers not found
+  const thicknesses = thicknessHeaders.length > 0 ? thicknessHeaders : THICKNESS_KEYS;
+  console.log(`  📐 Thicknesses: ${thicknesses.join(', ')}`);
+
+  // Now extract all <td> cells from each body row
+  const dataRows = [];
+  const totalsRow = null;
+
+  for (const rowHtml of allRows) {
+    // Skip header rows (contain <th>)
+    if (/<th/i.test(rowHtml)) continue;
+
+    // Extract all <td> cell values
+    const cellMatches = rowHtml.match(/<td[^>]*>([\s\S]*?)<\/td>/gi);
+    if (!cellMatches) continue;
+
+    // Get text content of each cell
+    const cells = cellMatches.map(td => {
+      return td
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, '')
+        .replace(/&amp;/g, '&')
+        .trim();
+    });
+
+    // Check if this is the Total row (first cell is "Total")
+    if (cells[0] && cells[0].toLowerCase().includes('total')) {
+      // Parse totals row — cells: [Total, r, q, r, q, r, q, r, q, r, q, r, q, r, q, r, q]
+      // 1 + 7*2 + 2 = 17 cells
+      const totalsByThickness = {};
+      for (let i = 0; i < thicknesses.length; i++) {
+        const baseIdx = 1 + i * 2;
+        const reels = parseInt((cells[baseIdx] || '0').replace(/,/g, '')) || 0;
+        const qty = parseInt((cells[baseIdx + 1] || '0').replace(/,/g, '')) || 0;
+        totalsByThickness[thicknesses[i]] = { reels, qty };
+      }
+      const totalReels = parseInt((cells[15] || '0').replace(/,/g, '')) || 0;
+      const totalQty = parseInt((cells[16] || '0').replace(/,/g, '')) || 0;
+      console.log(`  📊 Totals row: ${totalReels} reels, ${totalQty} kg`);
+      // Store totals in a property we'll return separately
+      _totalsRow = { totalsByThickness, totalReels, totalQty };
       continue;
     }
-    
-    // Extract all numbers
-    const numbers = textContent.match(/\b[\d,]+\b/g);
-    if (!numbers || numbers.length < 3) continue;
-    
-    // Clean numbers (remove commas)
-    const cleanNumbers = numbers.map(n => parseInt(n.replace(/,/g, '')));
-    
-    // First number should be width
-    const width = cleanNumbers[0];
-    
-    // Accept known widths OR any reasonable width (200-2000)
+
+    // Parse data row
+    // cells[0] = width, cells[1..2] = first thickness reels/qty, etc., cells[15..16] = total
+    const width = parseInt((cells[0] || '0').replace(/,/g, '')) || 0;
     if (width < 200 || width > 2000) continue;
-    
-    // Build row: last two numbers are total reels and total qty
-    const totalReels = cleanNumbers[cleanNumbers.length - 2] || 0;
-    const totalQty = cleanNumbers[cleanNumbers.length - 1] || 0;
-    
-    if (totalReels > 0 || totalQty > 0) {
-      rows.push({ width, totalReels, totalQty });
-      console.log(`    ✓ Width ${width}: ${totalReels} reels, ${totalQty} kg`);
+
+    const thicknessData = {};
+    for (let i = 0; i < thicknesses.length; i++) {
+      const baseIdx = 1 + i * 2;
+      const reels = parseInt((cells[baseIdx] || '0').replace(/,/g, '')) || 0;
+      const qty = parseInt((cells[baseIdx + 1] || '0').replace(/,/g, '')) || 0;
+      thicknessData[thicknesses[i]] = { reels, qty };
     }
+
+    const totalReels = parseInt((cells[15] || '0').replace(/,/g, '')) || 0;
+    const totalQty = parseInt((cells[16] || '0').replace(/,/g, '')) || 0;
+
+    dataRows.push({
+      width,
+      thicknesses: thicknessData,
+      totalReels,
+      totalQty
+    });
+    console.log(`    ✓ Width ${width}: ${totalReels} reels, ${totalQty} kg`);
   }
-  
-  return rows;
+
+  return { thicknesses, dataRows, totals: _totalsRow };
 }
 
+// Global to capture totals row
+let _totalsRow = null;
+
 function parsePlainTextTable(text) {
-  const rows = [];
+  // Try to parse the plain-text fixed-width table
   const lines = text.split(/\r?\n/);
-  
-  for (const line of lines) {
-    const numbers = line.match(/\b[\d,]+\b/g);
-    if (!numbers || numbers.length < 3) continue;
-    
-    const cleanNumbers = numbers.map(n => parseInt(n.replace(/,/g, '')));
-    const width = cleanNumbers[0];
-    
-    if (width < 200 || width > 2000) continue;
-    if (line.toLowerCase().includes('total')) continue;
-    
-    const totalReels = cleanNumbers[cleanNumbers.length - 2] || 0;
-    const totalQty = cleanNumbers[cleanNumbers.length - 1] || 0;
-    
-    if (totalReels > 0 || totalQty > 0) {
-      rows.push({ width, totalReels, totalQty });
+
+  // Find the header line with thickness values
+  let thicknesses = THICKNESS_KEYS;
+  let dataStartIdx = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].match(/Width\s*\(mm\)/i)) {
+      // Extract thicknesses from this line
+      const thicknessMatches = lines[i].match(/(\d+\.?\d*)\s*µ/g);
+      if (thicknessMatches) {
+        thicknesses = thicknessMatches.map(m => m.replace(/\s*µ/, ''));
+      }
+      dataStartIdx = i + 2; // Skip header + sub-header line
+      break;
     }
   }
-  
-  if (rows.length > 0) {
-    console.log(`  📊 Parsed ${rows.length} rows from plain text`);
+
+  if (dataStartIdx < 0) dataStartIdx = 0;
+
+  const dataRows = [];
+  _totalsRow = null;
+
+  for (let i = dataStartIdx; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Check for Total row
+    if (line.toLowerCase().startsWith('total')) {
+      const numbers = line.match(/\b[\d,]+\b/g);
+      if (numbers) {
+        const cleanNumbers = numbers.map(n => parseInt(n.replace(/,/g, '')));
+        const totalsByThickness = {};
+        for (let j = 0; j < thicknesses.length; j++) {
+          const baseIdx = j * 2;
+          totalsByThickness[thicknesses[j]] = {
+            reels: cleanNumbers[baseIdx] || 0,
+            qty: cleanNumbers[baseIdx + 1] || 0
+          };
+        }
+        _totalsRow = {
+          totalsByThickness,
+          totalReels: cleanNumbers[cleanNumbers.length - 2] || 0,
+          totalQty: cleanNumbers[cleanNumbers.length - 1] || 0
+        };
+      }
+      continue;
+    }
+
+    // Parse data row — first number is width, then pairs of reels/qty
+    const numbers = line.match(/\b[\d,]+\b/g);
+    if (!numbers || numbers.length < 3) continue;
+
+    const cleanNumbers = numbers.map(n => parseInt(n.replace(/,/g, '')));
+    const width = cleanNumbers[0];
+    if (width < 200 || width > 2000) continue;
+
+    // The rest are pairs: reels, qty for each thickness, then total reels, total qty
+    const numThicknesses = thicknesses.length;
+    const expectedNumbers = 1 + numThicknesses * 2 + 2; // width + thicknesses + total
+
+    const thicknessData = {};
+    for (let j = 0; j < numThicknesses; j++) {
+      const baseIdx = 1 + j * 2;
+      thicknessData[thicknesses[j]] = {
+        reels: cleanNumbers[baseIdx] || 0,
+        qty: cleanNumbers[baseIdx + 1] || 0
+      };
+    }
+
+    const totalReels = cleanNumbers[cleanNumbers.length - 2] || 0;
+    const totalQty = cleanNumbers[cleanNumbers.length - 1] || 0;
+
+    dataRows.push({
+      width,
+      thicknesses: thicknessData,
+      totalReels,
+      totalQty
+    });
   }
-  
-  return rows;
+
+  console.log(`  📊 Parsed ${dataRows.length} rows from plain text`);
+  return { thicknesses, dataRows, totals: _totalsRow };
 }
 
 // ─── Run ───────────────────────────────────────────────────
