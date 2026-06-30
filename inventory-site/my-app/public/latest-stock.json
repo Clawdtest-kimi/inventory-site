@@ -1,0 +1,110 @@
+{
+  "timestamp": "2026-06-30T11:34:26.185Z",
+  "subject": " Aluminium Foil Inventory in Hungary, Europe – SRF Group (Manufacturer of PET / BOPP / ALUFOIL)",
+  "from": "SRF Hungary AL Foil Stock <Alufoil.HU@srf.com>",
+  "emailDate": "Thu, 25 Jun 2026 06:34:01 +0000",
+  "totalReels": 112,
+  "totalQty": 59712,
+  "data": [
+    {
+      "width": 565,
+      "totalReels": 1,
+      "totalQty": 266
+    },
+    {
+      "width": 600,
+      "totalReels": 4,
+      "totalQty": 1244
+    },
+    {
+      "width": 700,
+      "totalReels": 17,
+      "totalQty": 7631
+    },
+    {
+      "width": 735,
+      "totalReels": 2,
+      "totalQty": 781
+    },
+    {
+      "width": 760,
+      "totalReels": 4,
+      "totalQty": 1647
+    },
+    {
+      "width": 780,
+      "totalReels": 5,
+      "totalQty": 2162
+    },
+    {
+      "width": 830,
+      "totalReels": 6,
+      "totalQty": 2672
+    },
+    {
+      "width": 850,
+      "totalReels": 10,
+      "totalQty": 5171
+    },
+    {
+      "width": 860,
+      "totalReels": 9,
+      "totalQty": 4126
+    },
+    {
+      "width": 865,
+      "totalReels": 2,
+      "totalQty": 915
+    },
+    {
+      "width": 880,
+      "totalReels": 1,
+      "totalQty": 509
+    },
+    {
+      "width": 885,
+      "totalReels": 6,
+      "totalQty": 2868
+    },
+    {
+      "width": 960,
+      "totalReels": 4,
+      "totalQty": 2369
+    },
+    {
+      "width": 970,
+      "totalReels": 2,
+      "totalQty": 1269
+    },
+    {
+      "width": 990,
+      "totalReels": 5,
+      "totalQty": 3074
+    },
+    {
+      "width": 1000,
+      "totalReels": 2,
+      "totalQty": 1113
+    },
+    {
+      "width": 1010,
+      "totalReels": 17,
+      "totalQty": 12239
+    },
+    {
+      "width": 1116,
+      "totalReels": 11,
+      "totalQty": 7311
+    },
+    {
+      "width": 1140,
+      "totalReels": 2,
+      "totalQty": 1091
+    },
+    {
+      "width": 1200,
+      "totalReels": 2,
+      "totalQty": 1254
+    }
+  ]
+}

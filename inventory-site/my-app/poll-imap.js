@@ -151,9 +151,14 @@ async function pollOnce() {
     fs.writeFileSync(DATA_FILE, JSON.stringify(stockJson, null, 2));
     console.log(`  ✓ Saved to ${DATA_FILE}`);
     
+    // Also copy to public/ so Vercel serves it as static file
+    const publicFile = path.join(__dirname, 'public', 'latest-stock.json');
+    fs.mkdirSync(path.dirname(publicFile), { recursive: true });
+    fs.copyFileSync(DATA_FILE, publicFile);
+    console.log(`  ✓ Copied to public/latest-stock.json`);
+    
     // Commit to GitHub
     try {
-      // Check if there are changes
       const status = execSync('git status --porcelain', { cwd: REPO_DIR, encoding: 'utf8' }).trim();
       
       if (status) {
