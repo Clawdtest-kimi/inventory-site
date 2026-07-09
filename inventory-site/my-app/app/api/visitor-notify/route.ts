@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const TELEGRAM_BOT_TOKEN=*** || '';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = '6477833277';
 
 // Rate limiting: 1 notification per IP per 5 minutes
