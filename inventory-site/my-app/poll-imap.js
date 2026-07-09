@@ -209,11 +209,11 @@ async function pollOnce() {
                 `/usr/bin/curl -s -X POST "https://api.vercel.com/v2/deployments/${depUrl}/aliases" ` +
                 `-H "Authorization: Bearer ${vToken}" ` +
                 `-H "Content-Type: application/json" ` +
-                `-d '{"alias":"www.packaging.team"}'`,
+                `-d '{"domain":"www.packaging.team"}'`,
                 { encoding: 'utf8', timeout: 15000 }
               );
               const aliasObj = JSON.parse(aliasResult);
-              if (aliasObj.alias) {
+              if (aliasObj.domain || aliasObj.alias) {
                 console.log(`  ✓ Alias assigned: www.packaging.team → ${depUrl}`);
                 aliasAssigned = true;
               } else {
