@@ -23,6 +23,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { simpleParser } = require('mailparser');
+const os = require('os');
 
 // ─── Config ───────────────────────────────────────────────
 const IMAP_CONFIG = {
@@ -160,7 +161,7 @@ async function pollOnce() {
     fs.copyFileSync(DATA_FILE, publicFile);
     console.log(`  ✓ Copied to public/latest-stock.json`);
     
-    // Commit to GitHub
+    // Commit to GitHub and deploy to Vercel
     try {
       const status = execSync('git status --porcelain', { cwd: REPO_DIR, encoding: 'utf8' }).trim();
       
@@ -169,6 +170,64 @@ async function pollOnce() {
         execSync(`git commit -m "data: auto-update from email - ${now} - ${totalReels} rolls"`, { cwd: REPO_DIR });
         execSync('git push origin main', { cwd: REPO_DIR, timeout: 30000 });
         console.log('  ✓ Committed & pushed to GitHub');
+        
+        // Deploy to Vercel: wait for git auto-deploy, then assign www.packaging.team alias
+        try {
+          const VERCEL_TOKEN = fs.readFileSync(path.join(os.homedir(), '.vercel', 'auth.json'), 'utf8');
+          const tokenObj = JSON.parse(VERCEL_TOKEN);
+          const vToken = tokenObj.token;
+          const PROJECT_ID = 'prj_Tp8TpAUdoM6PJ090fVCNFaeItx4s';
+          
+          // Wait for Vercel to process the git push (auto-deploy triggers on push)
+          console.log('  ⏳ Waiting for Vercel git auto-deploy...');
+          await new Promise(r => setTimeout(r, 30000)); // 30s wait
+          
+          // Find the latest READY git deployment via API
+          let aliasAssigned = false;
+          for (let attempt = 0; attempt < 6 && !aliasAssigned; attempt++) {
+            if (attempt > 0) {
+              console.log(`  ⏳ Retry ${attempt}/5 — waiting for deployment to be READY...`);
+              await new Promise(r => setTimeout(r, 15000)); // 15s between retries
+            }
+            
+            const listResult = execSync(
+              `/usr/bin/curl -s "https://api.vercel.com/v6/deployments?projectId=${PROJECT_ID}&limit=10&target=production" ` +
+              `-H "Authorization: Bearer ${vToken}"`,
+              { encoding: 'utf8', timeout: 15000 }
+            );
+            const listObj = JSON.parse(listResult);
+            
+            // Find latest READY git-source deployment
+            const gitDep = (listObj.deployments || []).find(d => d.source === 'git' && d.readyState === 'READY');
+            
+            if (gitDep) {
+              const depUrl = gitDep.url;
+              console.log(`  ✓ Found git deployment: ${depUrl}`);
+              
+              // Assign www.packaging.team alias
+              const aliasResult = execSync(
+                `/usr/bin/curl -s -X POST "https://api.vercel.com/v2/deployments/${depUrl}/aliases" ` +
+                `-H "Authorization: Bearer ${vToken}" ` +
+                `-H "Content-Type: application/json" ` +
+                `-d '{"alias":"www.packaging.team"}'`,
+                { encoding: 'utf8', timeout: 15000 }
+              );
+              const aliasObj = JSON.parse(aliasResult);
+              if (aliasObj.alias) {
+                console.log(`  ✓ Alias assigned: www.packaging.team → ${depUrl}`);
+                aliasAssigned = true;
+              } else {
+                console.log(`  ⚠️ Alias response: ${aliasResult.substring(0, 120)}`);
+              }
+            }
+          }
+          
+          if (!aliasAssigned) {
+            console.log('  ⚠️ Could not find READY git deployment after retries');
+          }
+        } catch (vercelError) {
+          console.log('  ⚠️ Vercel alias failed:', vercelError.message.split('\n')[0]);
+        }
       } else {
         console.log('  ℹ️ No changes to commit (data unchanged)');
       }

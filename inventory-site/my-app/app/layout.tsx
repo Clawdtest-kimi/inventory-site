@@ -4,6 +4,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Providers } from "./providers";
 import { Header } from "./components/header";
+import VisitorTracker from "./components/visitor-tracker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,6 +29,7 @@ export default function RootLayout({
           <main className="min-h-screen">
             {children}
           </main>
+          <VisitorTracker />
         </Providers>
       </body>
     </html>
