@@ -201,23 +201,20 @@ async function pollOnce() {
             const gitDep = (listObj.deployments || []).find(d => d.source === 'git' && d.readyState === 'READY');
             
             if (gitDep) {
-              const depUrl = gitDep.url;
-              console.log(`  ✓ Found git deployment: ${depUrl}`);
+              const depUrl = gitDep.url;  // Use URL, not UID — vercel alias set needs the URL
+              console.log(`  ✓ Found git deployment: ${depUrl} (ID: ${gitDep.uid})`);
               
-              // Assign www.packaging.team alias
+              // Assign www.packaging.team alias via Vercel CLI
+              const vercelToken = process.env.VERCEL_TOKEN || vToken;
               const aliasResult = execSync(
-                `/usr/bin/curl -s -X POST "https://api.vercel.com/v2/deployments/${depUrl}/aliases" ` +
-                `-H "Authorization: Bearer ${vToken}" ` +
-                `-H "Content-Type: application/json" ` +
-                `-d '{"domain":"www.packaging.team"}'`,
-                { encoding: 'utf8', timeout: 15000 }
+                `npx vercel alias set ${depUrl} www.packaging.team --token "${vercelToken}" --scope sergius-projects-30adc328 2>&1`,
+                { encoding: 'utf8', timeout: 30000 }
               );
-              const aliasObj = JSON.parse(aliasResult);
-              if (aliasObj.domain || aliasObj.alias) {
+              if (aliasResult.includes('Success')) {
                 console.log(`  ✓ Alias assigned: www.packaging.team → ${depUrl}`);
                 aliasAssigned = true;
               } else {
-                console.log(`  ⚠️ Alias response: ${aliasResult.substring(0, 120)}`);
+                console.log(`  ⚠️ Alias response: ${aliasResult.substring(0, 200)}`);
               }
             }
           }
