@@ -125,6 +125,23 @@ async function pollOnce() {
     console.log(`     From: ${newest.from}`);
     console.log(`     Date: ${newest.date}`);
     
+    // ── GUARD: Don't overwrite newer data with older email ──
+    if (fs.existsSync(DATA_FILE)) {
+      try {
+        const existing = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        const existingDate = new Date(existing.emailDate);
+        const newDate = new Date(newest.date);
+        if (newDate < existingDate) {
+          console.log(`  ⏭️  Skipping: newest email (${newest.date}) is OLDER than current data (${existing.emailDate})`);
+          console.log(`  ✅ Kept existing data: ${existing.totalReels} reels from ${existing.emailDate}`);
+          await connection.end();
+          return;
+        }
+      } catch (e) {
+        // If we can't read existing data, proceed
+      }
+    }
+    
     const parsed = parseStockTable(newest.text);
     
     if (!parsed || !parsed.dataRows || parsed.dataRows.length === 0) {
