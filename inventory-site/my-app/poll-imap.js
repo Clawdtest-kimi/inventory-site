@@ -224,7 +224,7 @@ async function pollOnce() {
               // Assign www.packaging.team alias via Vercel CLI
               const vercelToken = process.env.VERCEL_TOKEN || vToken;
               const aliasResult = execSync(
-                `npx vercel alias set ${depUrl} www.packaging.team --token "${vercelToken}" --scope sergius-projects-30adc328 2>&1`,
+                `/opt/homebrew/bin/vercel alias set ${depUrl} www.packaging.team --token "${vercelToken}" --scope sergius-projects-30adc328 2>&1`,
                 { encoding: 'utf8', timeout: 30000 }
               );
               if (aliasResult.includes('Success')) {
