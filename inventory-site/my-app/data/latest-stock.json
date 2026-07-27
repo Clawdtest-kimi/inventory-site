@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-07-27T05:00:06.040Z",
+  "timestamp": "2026-07-27T07:00:02.657Z",
   "subject": " Aluminium Foil Inventory in Hungary, Europe – SRF Group (Manufacturer of PET / BOPP / ALUFOIL)",
   "from": "SRF Hungary AL Foil Stock <Alufoil.HU@srf.com>",
-  "emailDate": "Thu, 23 Jul 2026 06:32:08 +0000",
+  "emailDate": "Mon, 27 Jul 2026 06:36:53 +0000",
   "thicknesses": [
     "6.35",
     "7",
@@ -12,21 +12,21 @@
     "37",
     "40"
   ],
-  "totalReels": 277,
-  "totalQty": 133549,
+  "totalReels": 273,
+  "totalQty": 131515,
   "totals": {
     "totalsByThickness": {
       "7": {
-        "reels": 48,
-        "qty": 24161
+        "reels": 47,
+        "qty": 23788
       },
       "8": {
-        "reels": 82,
-        "qty": 39956
+        "reels": 80,
+        "qty": 38924
       },
       "9": {
-        "reels": 77,
-        "qty": 29361
+        "reels": 76,
+        "qty": 28732
       },
       "12": {
         "reels": 9,
@@ -45,8 +45,8 @@
         "qty": 26343
       }
     },
-    "totalReels": 277,
-    "totalQty": 133549
+    "totalReels": 273,
+    "totalQty": 131515
   },
   "data": [
     {
@@ -188,41 +188,6 @@
       },
       "totalReels": 4,
       "totalQty": 1604
-    },
-    {
-      "width": 760,
-      "thicknesses": {
-        "7": {
-          "reels": 1,
-          "qty": 372
-        },
-        "8": {
-          "reels": 0,
-          "qty": 0
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 1,
-      "totalQty": 372
     },
     {
       "width": 780,
@@ -656,8 +621,8 @@
           "qty": 0
         },
         "9": {
-          "reels": 2,
-          "qty": 1269
+          "reels": 1,
+          "qty": 641
         },
         "12": {
           "reels": 0,
@@ -676,8 +641,8 @@
           "qty": 0
         }
       },
-      "totalReels": 2,
-      "totalQty": 1269
+      "totalReels": 1,
+      "totalQty": 641
     },
     {
       "width": 980,
@@ -897,8 +862,8 @@
           "qty": 2169
         },
         "8": {
-          "reels": 2,
-          "qty": 1032
+          "reels": 0,
+          "qty": 0
         },
         "9": {
           "reels": 0,
@@ -921,8 +886,8 @@
           "qty": 0
         }
       },
-      "totalReels": 6,
-      "totalQty": 3201
+      "totalReels": 4,
+      "totalQty": 2169
     },
     {
       "width": 1067,
