@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-07-30T05:00:04.847Z",
+  "timestamp": "2026-07-30T07:00:01.680Z",
   "subject": " Aluminium Foil Inventory in Hungary, Europe – SRF Group (Manufacturer of PET / BOPP / ALUFOIL)",
   "from": "SRF Hungary AL Foil Stock <Alufoil.HU@srf.com>",
-  "emailDate": "Mon, 27 Jul 2026 06:36:53 +0000",
+  "emailDate": "Thu, 30 Jul 2026 06:32:37 +0000",
   "thicknesses": [
     "6.35",
     "7",
@@ -12,8 +12,8 @@
     "37",
     "40"
   ],
-  "totalReels": 273,
-  "totalQty": 131515,
+  "totalReels": 242,
+  "totalQty": 120661,
   "totals": {
     "totalsByThickness": {
       "7": {
@@ -21,16 +21,16 @@
         "qty": 23788
       },
       "8": {
-        "reels": 80,
-        "qty": 38924
+        "reels": 78,
+        "qty": 37702
       },
       "9": {
-        "reels": 76,
-        "qty": 28732
+        "reels": 50,
+        "qty": 20723
       },
       "12": {
-        "reels": 9,
-        "qty": 4424
+        "reels": 10,
+        "qty": 4931
       },
       "37": {
         "reels": 10,
@@ -41,12 +41,12 @@
         "qty": 4133
       },
       "6.35": {
-        "reels": 43,
-        "qty": 26343
+        "reels": 39,
+        "qty": 24213
       }
     },
-    "totalReels": 273,
-    "totalQty": 131515
+    "totalReels": 242,
+    "totalQty": 120661
   },
   "data": [
     {
@@ -96,8 +96,8 @@
           "qty": 3214
         },
         "9": {
-          "reels": 59,
-          "qty": 19222
+          "reels": 33,
+          "qty": 11213
         },
         "12": {
           "reels": 0,
@@ -116,8 +116,8 @@
           "qty": 0
         }
       },
-      "totalReels": 75,
-      "totalQty": 26569
+      "totalReels": 49,
+      "totalQty": 18560
     },
     {
       "width": 730,
@@ -415,8 +415,8 @@
           "qty": 0
         },
         "12": {
-          "reels": 1,
-          "qty": 509
+          "reels": 2,
+          "qty": 1017
         },
         "37": {
           "reels": 0,
@@ -431,8 +431,8 @@
           "qty": 0
         }
       },
-      "totalReels": 3,
-      "totalQty": 1439
+      "totalReels": 4,
+      "totalQty": 1947
     },
     {
       "width": 885,
@@ -652,8 +652,8 @@
           "qty": 2134
         },
         "8": {
-          "reels": 10,
-          "qty": 5890
+          "reels": 8,
+          "qty": 4669
         },
         "9": {
           "reels": 2,
@@ -676,8 +676,8 @@
           "qty": 0
         }
       },
-      "totalReels": 16,
-      "totalQty": 9183
+      "totalReels": 14,
+      "totalQty": 7962
     },
     {
       "width": 990,
@@ -742,12 +742,12 @@
           "qty": 0
         },
         "6.35": {
-          "reels": 7,
-          "qty": 3500
+          "reels": 4,
+          "qty": 2001
         }
       },
-      "totalReels": 9,
-      "totalQty": 4613
+      "totalReels": 6,
+      "totalQty": 3114
     },
     {
       "width": 1010,
@@ -1127,12 +1127,12 @@
           "qty": 0
         },
         "6.35": {
-          "reels": 2,
-          "qty": 1254
+          "reels": 1,
+          "qty": 623
         }
       },
-      "totalReels": 2,
-      "totalQty": 1254
+      "totalReels": 1,
+      "totalQty": 623
     },
     {
       "width": 1215,
