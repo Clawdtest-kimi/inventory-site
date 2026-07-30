@@ -21,8 +21,8 @@ const IMAP_CONFIG = {
 
 const VERCEL_API = 'https://inventory-site-v2.vercel.app/api/email';
 
-// Known widths from the standard table
-const KNOWN_WIDTHS = [565, 700, 735, 770, 780, 830, 860, 865, 870, 900, 920, 960, 970, 980, 990, 1010, 1020, 1050, 1067, 1070, 1080, 1090, 1116, 1120, 1140, 1160, 1180, 1200, 1220, 1445];
+// Known widths from the standard table — updated to include all widths seen in SRF emails
+const KNOWN_WIDTHS = [565, 600, 700, 730, 735, 770, 780, 830, 850, 860, 865, 870, 880, 885, 900, 920, 930, 960, 970, 980, 990, 1000, 1010, 1015, 1020, 1030, 1050, 1067, 1070, 1080, 1090, 1116, 1120, 1140, 1150, 1160, 1175, 1180, 1200, 1215, 1220, 1445];
 
 async function pollEmail() {
   console.log('📧 Connecting to mail.privateemail.com...');
@@ -71,8 +71,12 @@ async function pollEmail() {
       const subject = header.body.subject?.[0] || '';
       const from = header.body.from?.[0] || '';
       
-      // Only process stock report emails
-      if (!subject.toLowerCase().includes('stock') && !subject.toLowerCase().includes('report')) {
+      // Only process stock report emails — match by sender or subject keywords
+      const fromLower = from.toLowerCase();
+      const subjectLower = subject.toLowerCase();
+      if (!subjectLower.includes('stock') && !subjectLower.includes('report') 
+          && !subjectLower.includes('inventory') && !subjectLower.includes('foil')
+          && !fromLower.includes('alufoil') && !fromLower.includes('srf')) {
         continue;
       }
       
@@ -268,24 +272,34 @@ function buildRowFromNumbers(width, numbers) {
 }
 
 // Expected data structure for mapping email values to correct columns
+// Updated with all widths seen in SRF emails through July 2026
 const EXPECTED_DATA = {
   565: { has7: true },
+  600: { has8: true },
   700: { has8: true, has37: true },
+  730: { has8: true },
   735: { has8: true },
   770: { has635: true },
   780: { has8: true },
   830: { has9: true },
+  850: { has37: true },
   860: { has7: true, has8: true },
   865: { has635: true, has7: true },
   870: { has7: true, has8: true },
+  880: { has8: true, has9: true },
+  885: { has8: true },
   900: { has7: true },
   920: { has7: true, has8: true, has9: true },
+  930: { has9: true },
   960: { has9: true },
   970: { has8: true },
   980: { has7: true, has8: true, has9: true },
   990: { has8: true },
+  1000: { has8: true, has9: true },
   1010: { has7: true, has8: true, has12: true, has37: true, has40: true },
+  1015: { has8: true },
   1020: { has8: true },
+  1030: { has8: true },
   1050: { has7: true },
   1067: { has635: true },
   1070: { has8: true },
@@ -294,9 +308,12 @@ const EXPECTED_DATA = {
   1116: { has635: true },
   1120: { has7: true, has8: true },
   1140: { has8: true },
+  1150: { has9: true },
   1160: { has9: true },
+  1175: { has8: true },
   1180: { has8: true },
   1200: { has635: true },
+  1215: { has8: true },
   1220: { has8: true },
   1445: { has635: true }
 };
