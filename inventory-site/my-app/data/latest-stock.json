@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-07-30T09:00:01.738Z",
+  "timestamp": "2026-08-07T06:13:53.865Z",
   "subject": " Aluminium Foil Inventory in Hungary, Europe – SRF Group (Manufacturer of PET / BOPP / ALUFOIL)",
   "from": "SRF Hungary AL Foil Stock <Alufoil.HU@srf.com>",
-  "emailDate": "Thu, 30 Jul 2026 06:32:37 +0000",
+  "emailDate": "Thu, 6 Aug 2026 06:31:53 +0000",
   "thicknesses": [
     "6.35",
     "7",
@@ -12,21 +12,21 @@
     "37",
     "40"
   ],
-  "totalReels": 242,
-  "totalQty": 120661,
+  "totalReels": 188,
+  "totalQty": 93395,
   "totals": {
     "totalsByThickness": {
       "7": {
-        "reels": 47,
-        "qty": 23788
+        "reels": 28,
+        "qty": 14171
       },
       "8": {
-        "reels": 78,
-        "qty": 37702
+        "reels": 58,
+        "qty": 28201
       },
       "9": {
-        "reels": 50,
-        "qty": 20723
+        "reels": 47,
+        "qty": 18861
       },
       "12": {
         "reels": 10,
@@ -41,12 +41,12 @@
         "qty": 4133
       },
       "6.35": {
-        "reels": 39,
-        "qty": 24213
+        "reels": 27,
+        "qty": 17927
       }
     },
-    "totalReels": 242,
-    "totalQty": 120661
+    "totalReels": 188,
+    "totalQty": 93395
   },
   "data": [
     {
@@ -298,8 +298,8 @@
       "width": 860,
       "thicknesses": {
         "7": {
-          "reels": 7,
-          "qty": 3128
+          "reels": 5,
+          "qty": 2225
         },
         "8": {
           "reels": 0,
@@ -326,8 +326,8 @@
           "qty": 0
         }
       },
-      "totalReels": 7,
-      "totalQty": 3128
+      "totalReels": 5,
+      "totalQty": 2225
     },
     {
       "width": 865,
@@ -368,12 +368,12 @@
       "width": 870,
       "thicknesses": {
         "7": {
-          "reels": 0,
-          "qty": 0
+          "reels": 3,
+          "qty": 1353
         },
         "8": {
-          "reels": 16,
-          "qty": 7164
+          "reels": 7,
+          "qty": 3153
         },
         "9": {
           "reels": 0,
@@ -396,8 +396,8 @@
           "qty": 0
         }
       },
-      "totalReels": 16,
-      "totalQty": 7164
+      "totalReels": 10,
+      "totalQty": 4506
     },
     {
       "width": 880,
@@ -470,46 +470,11 @@
       "totalQty": 2868
     },
     {
-      "width": 900,
-      "thicknesses": {
-        "7": {
-          "reels": 0,
-          "qty": 0
-        },
-        "8": {
-          "reels": 3,
-          "qty": 1361
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 3,
-      "totalQty": 1361
-    },
-    {
       "width": 920,
       "thicknesses": {
         "7": {
-          "reels": 8,
-          "qty": 3711
+          "reels": 0,
+          "qty": 0
         },
         "8": {
           "reels": 16,
@@ -536,113 +501,8 @@
           "qty": 0
         }
       },
-      "totalReels": 24,
-      "totalQty": 11623
-    },
-    {
-      "width": 930,
-      "thicknesses": {
-        "7": {
-          "reels": 0,
-          "qty": 0
-        },
-        "8": {
-          "reels": 5,
-          "qty": 2357
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 5,
-      "totalQty": 2357
-    },
-    {
-      "width": 960,
-      "thicknesses": {
-        "7": {
-          "reels": 0,
-          "qty": 0
-        },
-        "8": {
-          "reels": 3,
-          "qty": 1772
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 3,
-      "totalQty": 1772
-    },
-    {
-      "width": 970,
-      "thicknesses": {
-        "7": {
-          "reels": 0,
-          "qty": 0
-        },
-        "8": {
-          "reels": 0,
-          "qty": 0
-        },
-        "9": {
-          "reels": 1,
-          "qty": 641
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 1,
-      "totalQty": 641
+      "totalReels": 16,
+      "totalQty": 7912
     },
     {
       "width": 980,
@@ -680,41 +540,6 @@
       "totalQty": 7962
     },
     {
-      "width": 990,
-      "thicknesses": {
-        "7": {
-          "reels": 0,
-          "qty": 0
-        },
-        "8": {
-          "reels": 0,
-          "qty": 0
-        },
-        "9": {
-          "reels": 2,
-          "qty": 1221
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 2,
-      "totalQty": 1221
-    },
-    {
       "width": 1000,
       "thicknesses": {
         "7": {
@@ -742,19 +567,19 @@
           "qty": 0
         },
         "6.35": {
-          "reels": 4,
-          "qty": 2001
+          "reels": 0,
+          "qty": 0
         }
       },
-      "totalReels": 6,
-      "totalQty": 3114
+      "totalReels": 2,
+      "totalQty": 1113
     },
     {
       "width": 1010,
       "thicknesses": {
         "7": {
-          "reels": 10,
-          "qty": 5337
+          "reels": 8,
+          "qty": 4319
         },
         "8": {
           "reels": 4,
@@ -781,8 +606,8 @@
           "qty": 0
         }
       },
-      "totalReels": 15,
-      "totalQty": 8008
+      "totalReels": 13,
+      "totalQty": 6990
     },
     {
       "width": 1015,
@@ -818,111 +643,6 @@
       },
       "totalReels": 3,
       "totalQty": 1596
-    },
-    {
-      "width": 1020,
-      "thicknesses": {
-        "7": {
-          "reels": 6,
-          "qty": 3168
-        },
-        "8": {
-          "reels": 0,
-          "qty": 0
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 6,
-      "totalQty": 3168
-    },
-    {
-      "width": 1030,
-      "thicknesses": {
-        "7": {
-          "reels": 4,
-          "qty": 2169
-        },
-        "8": {
-          "reels": 0,
-          "qty": 0
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 0,
-          "qty": 0
-        }
-      },
-      "totalReels": 4,
-      "totalQty": 2169
-    },
-    {
-      "width": 1067,
-      "thicknesses": {
-        "7": {
-          "reels": 0,
-          "qty": 0
-        },
-        "8": {
-          "reels": 0,
-          "qty": 0
-        },
-        "9": {
-          "reels": 0,
-          "qty": 0
-        },
-        "12": {
-          "reels": 0,
-          "qty": 0
-        },
-        "37": {
-          "reels": 0,
-          "qty": 0
-        },
-        "40": {
-          "reels": 0,
-          "qty": 0
-        },
-        "6.35": {
-          "reels": 8,
-          "qty": 4284
-        }
-      },
-      "totalReels": 8,
-      "totalQty": 4284
     },
     {
       "width": 1116,
