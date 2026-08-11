@@ -328,6 +328,7 @@ export default function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <h2 className="text-lg font-semibold text-slate-700 mb-4">Stock Jaszfenyszaru, Hungary</h2>
       {/* Filter Section */}
       <Card className="mb-6 shadow-sm border-slate-200">
         <CardContent className="p-6">
