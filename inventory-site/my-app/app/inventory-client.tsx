@@ -22,6 +22,14 @@ import {
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
 
+// Email obfuscation — parts stored as char codes so bots scraping HTML source can't find the email.
+// Decoded at runtime by JavaScript only. The mailto: link is only set on click, never in the DOM.
+const _e = [112, 111, 112, 111, 118].map((c) => String.fromCharCode(c)).join("");
+const _d = [112, 97, 99, 107, 97, 103, 105, 110, 103].map((c) => String.fromCharCode(c)).join("");
+const _t = [116, 101, 97, 109].map((c) => String.fromCharCode(c)).join("");
+const emailHref = `mailto:${_e}@${_d}.${_t}`;
+const emailDisplay = `${_e}@${_d}.${_t}`;
+
 // Default stock data from the CSV file
 const DEFAULT_CSV = `Width (mm),6.35µ,7µ,8µ,9µ,12µ,37µ,40µ,Total,,,,,,,,
 Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),Reels (Nos),Qty (Kgs),
@@ -587,15 +595,24 @@ export function InventoryClient() {
             +40733721425
           </a>
           <a
-            href="mailto:popov@packaging.team"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = emailHref;
+            }}
             className="flex items-center gap-3 px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-lg font-medium"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            popov@packaging.team
+            {emailDisplay}
           </a>
         </div>
+        <noscript>
+          <p className="mt-4 text-slate-500 text-sm">
+            Enable JavaScript to see the email address, or call us at +40733721425.
+          </p>
+        </noscript>
       </div>
     </div>
   );

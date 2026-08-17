@@ -5,7 +5,7 @@ const SITE_URL = "https://www.packaging.team";
 export const metadata = {
   title: "Aluminium Foil Stock — Live Inventory | Packaging Team EU",
   description:
-    "Browse our live aluminium foil inventory. Thicknesses from 6.35µ to 50µ, widths from 565mm to 1250mm. In stock at our Hungary warehouse with EU-wide delivery. Contact stock@packaging.team for quotes.",
+    "Browse our live aluminium foil inventory. Thicknesses from 6.35µ to 50µ, widths from 565mm to 1250mm. In stock at our Hungary warehouse with EU-wide delivery. Orders: +40733721425.",
   alternates: {
     canonical: SITE_URL,
   },
@@ -89,8 +89,8 @@ export default function HomePage() {
         <section>
           <h2>Contact</h2>
           <p>
-            Orders can be placed to <strong>+40733721425</strong> or{" "}
-            <a href="mailto:popov@packaging.team">popov@packaging.team</a>
+            Orders can be placed to <strong>+40733721425</strong> or by email
+            (enable JavaScript to reveal email address).
           </p>
           <p>
             Visit our live stock inventory at <a href="https://www.packaging.team">www.packaging.team</a>

@@ -126,7 +126,6 @@ export default function RootLayout({
               logo: `${SITE_URL}/logo.png`,
               description:
                 "Wholesale supplier of aluminium foil from 6.35 to 50 microns across the European Union. Warehouse in Hungary.",
-              email: "popov@packaging.team",
               telephone: "+40733721425",
               address: {
                 "@type": "PostalAddress",
@@ -196,7 +195,6 @@ export default function RootLayout({
               name: "Packaging Team",
               url: SITE_URL,
               image: `${SITE_URL}/logo.png`,
-              email: "popov@packaging.team",
               telephone: "+40733721425",
               priceRange: "€€",
               address: {
@@ -263,7 +261,7 @@ export default function RootLayout({
                   name: "How can I check current aluminium foil stock availability?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Current stock availability is displayed on our website at www.packaging.team. You can filter by thickness and width to see real-time inventory. To place an order, call +40733721425 or email popov@packaging.team.",
+                    text: "Current stock availability is displayed on our website at www.packaging.team. You can filter by thickness and width to see real-time inventory. To place an order, call +40733721425.",
                   },
                 },
                 {
