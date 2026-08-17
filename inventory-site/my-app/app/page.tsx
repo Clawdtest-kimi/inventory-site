@@ -89,7 +89,8 @@ export default function HomePage() {
         <section>
           <h2>Contact</h2>
           <p>
-            For orders, quotes, and inquiries: <a href="mailto:stock@packaging.team">stock@packaging.team</a>
+            Orders can be placed to <strong>+40733721425</strong> or{" "}
+            <a href="mailto:popov@packaging.team">popov@packaging.team</a>
           </p>
           <p>
             Visit our live stock inventory at <a href="https://www.packaging.team">www.packaging.team</a>
