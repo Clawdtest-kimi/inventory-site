@@ -12,3 +12,4 @@ USER.md
 
 # Keep only the inventory site
 # All other workspace config is local-only
+.vercel
