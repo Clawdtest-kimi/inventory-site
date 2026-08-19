@@ -8,13 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { parseStockFile } from "@/lib/email-parser";
-import { CheckCircle, XCircle, FileText, Clock, Mail, RefreshCw } from "lucide-react";
-
-interface GitInfo {
-  hash: string;
-  date: string;
-  message: string;
-}
+import { CheckCircle, XCircle, FileText, Clock, RefreshCw } from "lucide-react";
 
 interface UploadLog {
   id: string;
@@ -33,7 +27,6 @@ export default function MasterPage() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [debugInfo, setDebugInfo] = useState("");
-  const [gitInfo, setGitInfo] = useState<GitInfo | null>(null);
   const [uploadLog, setUploadLog] = useState<UploadLog[]>([]);
 
   useEffect(() => {
@@ -42,70 +35,15 @@ export default function MasterPage() {
     }
   }, [status, router]);
 
-  // Fetch git info on load
-  useEffect(() => {
-    fetch("/api/git-info")
-      .then(res => res.json())
-      .then(data => setGitInfo(data))
-      .catch(() => setGitInfo(null));
-  }, []);
-
-  // Load upload log from localStorage and Redis
+  // Load upload log from localStorage
   const loadLogs = async () => {
     setUploading(true);
     setMessage("");
     
-    // Load local uploads
     const saved = localStorage.getItem("uploadLog");
     const localLogs: UploadLog[] = saved ? JSON.parse(saved) : [];
-    
-    // Load email uploads from Redis
-    try {
-      const res = await fetch("/api/email?t=" + Date.now()); // Cache buster
-      const data = await res.json();
-      
-      if (data.hasData && data.data) {
-        // Sync to localStorage so main Stock page can use it
-        localStorage.setItem("inventoryData", JSON.stringify(data.data));
-        localStorage.setItem("inventoryUpdated", data.updatedAt);
-        
-        // Dispatch storage event to notify Stock page
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'inventoryData',
-          newValue: JSON.stringify(data.data)
-        }));
-        
-        console.log("✅ Synced", data.data.length, "rows to localStorage");
-      }
-      
-      if (data.log && data.log.length > 0) {
-        // Convert Redis log format to UploadLog format
-        const emailLogs: UploadLog[] = data.log.map((entry: any) => ({
-          id: entry.id,
-          fileName: `Email: ${entry.source || "Unknown"}`,
-          timestamp: entry.timestamp,
-          size: 0, // Email size unknown
-          success: true,
-          rows: entry.rows,
-          source: "email"
-        }));
-        
-        // Merge and sort by timestamp (newest first)
-        const merged = [...emailLogs, ...localLogs].sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        ).slice(0, 50);
-        
-        setUploadLog(merged);
-        setMessage("✅ Log refreshed and data synced to Stock page");
-      } else {
-        setUploadLog(localLogs);
-        setMessage("✅ Log refreshed");
-      }
-    } catch (error) {
-      setUploadLog(localLogs);
-      setMessage("❌ Failed to refresh: " + (error as Error).message);
-    }
-    
+    setUploadLog(localLogs);
+    setMessage("✅ Log refreshed");
     setUploading(false);
   };
   
@@ -119,7 +57,7 @@ export default function MasterPage() {
 
   const addToLog = (entry: UploadLog) => {
     setUploadLog(prev => {
-      const newLog = [entry, ...prev].slice(0, 50); // Keep last 50 entries
+      const newLog = [entry, ...prev].slice(0, 50);
       localStorage.setItem("uploadLog", JSON.stringify(newLog));
       return newLog;
     });
@@ -128,7 +66,7 @@ export default function MasterPage() {
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+    
     setUploading(true);
     setMessage("");
     
@@ -142,16 +80,12 @@ export default function MasterPage() {
 
     try {
       const text = await file.text();
-      console.log("File content preview:", text.substring(0, 1000));
-      
       const data = await parseStockFile(text, file.name);
-      console.log("Parsed data:", data);
       
       if (data.length === 0) {
-        // Show debug info to help diagnose
         const preview = text.substring(0, 500).replace(/\n/g, ' | ');
         setDebugInfo(`File preview: ${preview}...`);
-        setMessage("❌ No data found. The parser couldn't find a valid stock table. Check browser console (F12) for details.");
+        setMessage("❌ No data found. The parser couldn't find a valid stock table.");
         logEntry.error = "No data found - invalid stock table";
         addToLog(logEntry);
         setUploading(false);
@@ -171,42 +105,11 @@ export default function MasterPage() {
         newValue: JSON.stringify(data)
       }));
       
-      // Also POST to API to update Redis
-      try {
-        await fetch("/api/email", {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            subject: `File Upload: ${file.name}`, 
-            from: 'Master Upload', 
-            data: data,
-            receivedAt: updatedAt
-          })
-        });
-        console.log("✅ File data synced to Redis");
-      } catch (e) {
-        console.log("⚠️ Could not sync to Redis, but localStorage updated");
-      }
-      
-      // Auto-commit to GitHub
-      try {
-        const response = await fetch('/api/git-commit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data, filename: file.name, timestamp: updatedAt })
-        });
-        if (response.ok) {
-          console.log("✅ Committed to GitHub");
-        }
-      } catch (e) {
-        console.log("⚠️ GitHub commit failed");
-      }
-      
       logEntry.success = true;
       logEntry.rows = data.length;
       addToLog(logEntry);
       
-      setMessage(`✅ Successfully uploaded! ${data.length} rows loaded from ${file.name} and synced to Stock page.`);
+      setMessage(`✅ Successfully uploaded! ${data.length} rows loaded from ${file.name}.`);
     } catch (error) {
       console.error("Upload error:", error);
       logEntry.error = (error as Error).message;
@@ -275,9 +178,6 @@ export default function MasterPage() {
               <li><strong>Email (.eml):</strong> Forwarded stock report emails - table is auto-extracted</li>
               <li><strong>Text:</strong> Pipe-delimited or space-separated tables</li>
             </ul>
-            <p className="text-sm text-slate-500 mt-2">
-              For emails, only the stock table data is extracted - headers and text are ignored.
-            </p>
           </div>
 
           <Button 
@@ -286,28 +186,6 @@ export default function MasterPage() {
           >
             View Inventory
           </Button>
-
-          <div className="border-t pt-4 mt-4">
-            <h4 className="font-semibold mb-2">Troubleshooting:</h4>
-            <p className="text-sm text-slate-600">
-              If upload fails, open browser console (F12 → Console) to see what the parser found.
-              You can also try copying the table content and saving as .csv file.
-            </p>
-          </div>
-
-          <div className="border-t pt-4 mt-4 bg-slate-50 p-3 rounded">
-            <p className="text-xs text-slate-500">
-              <span className="font-semibold">Last GitHub Update:</span>{" "}
-              {gitInfo ? (
-                <>
-                  {gitInfo.hash} — {new Date(gitInfo.date).toLocaleString()} 
-                  <span className="italic ml-1">({gitInfo.message})</span>
-                </>
-              ) : (
-                "Loading..."
-              )}
-            </p>
-          </div>
 
           {/* Upload Log */}
           <div className="border-t pt-6 mt-6">
@@ -339,9 +217,7 @@ export default function MasterPage() {
                     }`}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {entry.source === 'email' ? (
-                        <Mail className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                      ) : entry.success ? (
+                      {entry.success ? (
                         <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                       ) : (
                         <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -359,12 +235,6 @@ export default function MasterPage() {
                               {formatFileSize(entry.size)}
                             </>
                           )}
-                          {entry.source === 'email' && (
-                            <>
-                              <span className="mx-1">•</span>
-                              <span className="text-blue-600">Email</span>
-                            </>
-                          )}
                           {entry.rows !== undefined && (
                             <>
                               <span className="mx-1">•</span>
@@ -380,13 +250,9 @@ export default function MasterPage() {
                       </div>
                     </div>
                     <div className={`px-2 py-1 rounded text-xs font-medium ${
-                      entry.source === 'email'
-                        ? 'bg-blue-100 text-blue-700'
-                        : entry.success 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-red-100 text-red-700'
+                      entry.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
-                      {entry.source === 'email' ? 'EMAIL' : entry.success ? 'SUCCESS' : 'FAILED'}
+                      {entry.success ? 'SUCCESS' : 'FAILED'}
                     </div>
                   </div>
                 ))}
