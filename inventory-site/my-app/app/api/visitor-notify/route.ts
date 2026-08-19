@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Silent fail — never affects the visitor's UX.
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "6477833277";
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
 
 // Bot user-agent patterns — these are NOT real visitors
 const BOT_PATTERNS = [
@@ -25,6 +25,9 @@ const BOT_PATTERNS = [
 // Track last notification time to avoid spam (min 60 seconds between alerts)
 let lastNotifyTime = 0;
 const MIN_NOTIFY_INTERVAL_MS = 60_000;
+// Per-IP rate limiting — max 1 notification per 5 minutes per IP
+const ipNotifyMap = new Map<string, number>();
+const PER_IP_COOLDOWN_MS = 300_000;
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,7 +51,19 @@ export async function GET(request: NextRequest) {
     if (now - lastNotifyTime < MIN_NOTIFY_INTERVAL_MS) {
       return NextResponse.json({ ok: true, rate_limited: true }, { status: 200 });
     }
+    // Per-IP cooldown — block repeat spam from same IP
+    const lastIpNotify = ipNotifyMap.get(ip);
+    if (lastIpNotify && now - lastIpNotify < PER_IP_COOLDOWN_MS) {
+      return NextResponse.json({ ok: true, rate_limited: true }, { status: 200 });
+    }
+    // Clean old entries from map (prevent memory leak)
+    if (ipNotifyMap.size > 100) {
+      for (const [key, val] of ipNotifyMap) {
+        if (now - val > PER_IP_COOLDOWN_MS) ipNotifyMap.delete(key);
+      }
+    }
     lastNotifyTime = now;
+    ipNotifyMap.set(ip, now);
 
     // Build visitor info
     const time = new Date().toISOString();
