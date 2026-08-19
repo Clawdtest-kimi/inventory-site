@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
       {
         source: '/latest-stock.json',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=300, s-maxage=300' },
+          { key: 'Cache-Control', value: 'public, max-age=0, s-maxage=0, must-revalidate' },
         ],
       },
       {
