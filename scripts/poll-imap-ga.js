@@ -138,10 +138,8 @@ async function main() {
     console.log(`  ✅ Parsed ${stockData.length} rows — ${totalReels} reels, ${totalQty} kg total`);
 
     const stockJson = {
+      // NOTE: Do NOT include subject/from/emailDate — those leak supplier identity
       timestamp: now,
-      subject: newest.subject,
-      from: newest.from,
-      emailDate: newest.date,
       thicknesses: parsed.thicknesses,
       totalReels,
       totalQty,

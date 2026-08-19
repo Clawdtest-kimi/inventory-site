@@ -12,14 +12,24 @@ export async function GET() {
     const data = fs.readFileSync(filePath, 'utf-8');
     const json = JSON.parse(data);
 
-    return NextResponse.json(json, {
+    // STRIP internal metadata — only expose what the website needs
+    // Removes: timestamp, subject (supplier name!), from (email!), emailDate
+    const publicData = {
+      thicknesses: json.thicknesses || [],
+      totalReels: json.totalReels || 0,
+      totalQty: json.totalQty || 0,
+      totals: json.totals || {},
+      data: json.data || [],
+    };
+
+    return NextResponse.json(publicData, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
         'Expires': '0',
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to load stock data' },
       { status: 500 }
