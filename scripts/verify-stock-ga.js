@@ -19,7 +19,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const SITE_URL = 'https://www.packaging.team';
+const SITE_URL = 'https://www.packaging.team/api/stock';
 const LOCAL_FILE = path.resolve(__dirname, '..', 'inventory-site', 'my-app', 'public', 'latest-stock.json');
 const MAX_AGE_HOURS = 24;
 const MAX_EMAIL_AGE_DAYS = 3;
