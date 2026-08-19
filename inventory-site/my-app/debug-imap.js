@@ -3,7 +3,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED='0';
 
 const IMAP_CONFIG = {
   user: 'stock@packaging.team',
-  password: '***REMOVED***',
+  password: process.env.IMAP_PASSWORD || '',
   host: 'mail.privateemail.com',
   port: 993,
   tls: true,

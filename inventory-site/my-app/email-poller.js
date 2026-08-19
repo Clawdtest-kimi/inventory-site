@@ -11,7 +11,7 @@ const path = require('path');
 // Config - Namecheap Private Email
 const IMAP_CONFIG = {
   user: 'stock@packaging.team',
-  password: '***REMOVED***',
+  password: process.env.IMAP_PASSWORD || '',
   host: 'mail.privateemail.com',
   port: 993,
   tls: true,
