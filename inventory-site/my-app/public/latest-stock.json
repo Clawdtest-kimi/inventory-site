@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-19T06:50:20.550Z",
+  "timestamp": "2026-08-19T07:38:50.566Z",
   "thicknesses": [
     "6.35",
     "7",
@@ -9,13 +9,13 @@
     "37",
     "40"
   ],
-  "totalReels": 200,
-  "totalQty": 98909,
+  "totalReels": 205,
+  "totalQty": 101571,
   "totals": {
     "totalsByThickness": {
       "7": {
-        "reels": 28,
-        "qty": 13563
+        "reels": 33,
+        "qty": 16225
       },
       "8": {
         "reels": 67,
@@ -42,8 +42,8 @@
         "qty": 19929
       }
     },
-    "totalReels": 200,
-    "totalQty": 98909
+    "totalReels": 205,
+    "totalQty": 101571
   },
   "data": [
     {
@@ -750,8 +750,8 @@
       "width": 1010,
       "thicknesses": {
         "7": {
-          "reels": 0,
-          "qty": 0
+          "reels": 5,
+          "qty": 2662
         },
         "8": {
           "reels": 4,
@@ -778,8 +778,8 @@
           "qty": 0
         }
       },
-      "totalReels": 5,
-      "totalQty": 2671
+      "totalReels": 10,
+      "totalQty": 5333
     },
     {
       "width": 1015,
