@@ -29,14 +29,17 @@ jobs:
         working-directory: inventory-site/my-app
         run: npm ci --omit=dev || npm install imap-simple mailparser
 
+      - name: Install poller dependencies
+        working-directory: scripts
+        run: npm install imap-simple mailparser
+
       - name: Poll IMAP for stock email
         env:
           IMAP_USER: stock@packaging.team
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
           IMAP_HOST: mail.privateemail.com
           IMAP_PORT: '993'
-        working-directory: inventory-site/my-app
-        run: node ../../scripts/poll-imap-ga.js
+        run: node scripts/poll-imap-ga.js
 
       - name: Check for changes
         id: changes

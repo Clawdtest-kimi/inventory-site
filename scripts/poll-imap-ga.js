@@ -17,10 +17,12 @@
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const imaps = require('imap-simple');
+// Resolve modules from scripts/ directory (where npm install runs)
 const fs = require('fs');
 const path = require('path');
-const { simpleParser } = require('mailparser');
+const SCRIPTS_DIR = __dirname;
+const imaps = require(path.join(SCRIPTS_DIR, 'node_modules', 'imap-simple'));
+const { simpleParser } = require(path.join(SCRIPTS_DIR, 'node_modules', 'mailparser'));
 
 // ─── Config from env ───────────────────────────────────────
 const IMAP_CONFIG = {
