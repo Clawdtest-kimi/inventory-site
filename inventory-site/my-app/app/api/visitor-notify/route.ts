@@ -84,11 +84,11 @@ export async function GET(request: NextRequest) {
       `🌐 IP: ${ip !== "unknown" ? ip.replace(/(\d+)\.(\d+)\.\d+\.\d+/, "$1.$2.x.x") : "unknown"}`,
     ].join("\n");
 
-    // Send Telegram notification (fire and forget)
-    if (TELEGRAM_BOT_TOKEN) {
+    // Send Telegram notification
+    if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
       try {
         const tgUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-        await fetch(tgUrl, {
+        const tgRes = await fetch(tgUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -97,9 +97,14 @@ export async function GET(request: NextRequest) {
             disable_web_page_preview: true,
           }),
         });
-      } catch {
-        // Silent fail — don't affect visitor
+        if (!tgRes.ok) {
+          console.error(`Telegram API error: ${tgRes.status} ${await tgRes.text()}`);
+        }
+      } catch (e) {
+        console.error('Telegram send failed:', e);
       }
+    } else {
+      console.error('Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID env var');
     }
 
     return NextResponse.json({ ok: true }, { status: 200 });
