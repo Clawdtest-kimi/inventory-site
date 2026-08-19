@@ -36,7 +36,7 @@ const IMAP_CONFIG = {
   tlsOptions: { rejectUnauthorized: false }
 };
 
-const REPO_ROOT = path.resolve(__dirname, '..', '..');
+const REPO_ROOT = path.resolve(__dirname, '..');
 const PUBLIC_FILE = path.join(REPO_ROOT, 'inventory-site', 'my-app', 'public', 'latest-stock.json');
 
 // Known widths from SRF Hungary stock reports
