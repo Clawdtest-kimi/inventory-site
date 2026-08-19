@@ -1,0 +1,59 @@
+name: IMAP Stock Poller
+
+on:
+  schedule:
+    # Every 30 minutes at :00 and :30
+    - cron: '0,30 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write # Needed to commit back to repo
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: inventory-site/my-app
+        run: npm ci --omit=dev || npm install imap-simple mailparser
+
+      - name: Poll IMAP for stock email
+        env:
+          IMAP_USER: stock@packaging.team
+          IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
+          IMAP_HOST: mail.privateemail.com
+          IMAP_PORT: '993'
+        working-directory: inventory-site/my-app
+        run: node ../../scripts/poll-imap-ga.js
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes — data is current"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected — will commit"
+          fi
+
+      - name: Commit & push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add inventory-site/my-app/public/latest-stock.json
+          git commit -m "data: auto-update stock from email - $(date -u '+%Y-%m-%d %H:%M') UTC"
+          git push
