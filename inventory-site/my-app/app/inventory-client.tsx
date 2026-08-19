@@ -93,7 +93,7 @@ export function InventoryClient() {
     setLoading(true);
     try {
       // Load from static JSON file (updated by IMAP poller)
-      const res = await fetch("/latest-stock.json");
+      const res = await fetch(`/latest-stock.json?ts=${Date.now()}`);
       if (res.ok) {
         const stockData = await res.json();
         console.log("Loaded from latest-stock.json:", stockData.data?.length, "rows");
