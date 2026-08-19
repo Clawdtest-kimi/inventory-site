@@ -13,7 +13,7 @@ A Next.js-based inventory management system styled after TPL Lager with CSV uplo
 ## Login Credentials
 
 - **Username:** `Admin`
-- **Password:** `***REMOVED***`
+- **Password:** Set via `ADMIN_PASSWORD` environment variable (Vercel project settings)
 
 ## Local Development
 

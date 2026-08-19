@@ -10,7 +10,8 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (credentials?.username === "Admin" && credentials?.password === "***REMOVED***") {
+        const adminPassword = process.env.ADMIN_PASSWORD || '';
+        if (credentials?.username === "Admin" && credentials?.password === adminPassword) {
           return { id: "1", name: "Admin", email: "admin@inventory.local" }
         }
         return null
