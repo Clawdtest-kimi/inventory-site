@@ -21,6 +21,8 @@ const path = require('path');
 
 const SITE_URL = 'https://www.packaging.team/api/stock';
 const LOCAL_FILE = path.resolve(__dirname, '..', 'inventory-site', 'my-app', 'public', 'latest-stock.json');
+
+// Fetch from the dynamic API route (no CDN cache issues)
 const MAX_AGE_HOURS = 24;
 const MAX_EMAIL_AGE_DAYS = 3;
 
@@ -106,11 +108,11 @@ async function main() {
   // 1. Fetch website JSON
   let webData;
   try {
-    console.log(`  🌐 Fetching ${SITE_URL}/latest-stock.json...`);
-    webData = await fetchJson(`${SITE_URL}/latest-stock.json`);
+    console.log(`  🌐 Fetching ${SITE_URL}...`);
+    webData = await fetchJson(SITE_URL);
     console.log(`  ✓ Website responded`);
   } catch (err) {
-    const msg = `🚨 PACKAGING.TEAM VERIFY ALERT\n\n❌ Website unreachable or invalid JSON\n   URL: ${SITE_URL}/latest-stock.json\n   Error: ${err.message}\n   Time: ${now}`;
+    const msg = `🚨 PACKAGING.TEAM VERIFY ALERT\n\n❌ Website unreachable or invalid JSON\n   URL: ${SITE_URL}\n   Error: ${err.message}\n   Time: ${now}`;
     console.error(msg);
     await sendTelegram(msg);
     process.exit(3);
