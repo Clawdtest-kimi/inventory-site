@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-14T03:45:50.804Z",
+  "timestamp": "2026-09-14T09:38:05.683Z",
   "thicknesses": [
     "6.35",
     "7",
@@ -15,16 +15,16 @@
   "totals": {
     "totalsByThickness": {
       "7": {
-        "reels": 49,
-        "qty": 25372
+        "reels": 54,
+        "qty": 28033
       },
       "8": {
         "reels": 78,
         "qty": 36283
       },
       "9": {
-        "reels": 52,
-        "qty": 21638
+        "reels": 46,
+        "qty": 19803
       },
       "12": {
         "reels": 4,
@@ -102,8 +102,8 @@
           "qty": 4005
         },
         "9": {
-          "reels": 33,
-          "qty": 11213
+          "reels": 27,
+          "qty": 9378
         },
         "12": {
           "reels": 0,
@@ -913,8 +913,8 @@
       "width": 1010,
       "thicknesses": {
         "7": {
-          "reels": 0,
-          "qty": 0
+          "reels": 5,
+          "qty": 2662
         },
         "8": {
           "reels": 4,
