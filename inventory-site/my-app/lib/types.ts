@@ -10,6 +10,8 @@ export interface StockRow {
   qty9?: number;
   reels12?: number;
   qty12?: number;
+  reels20?: number;
+  qty20?: number;
   reels37?: number;
   qty37?: number;
   reels40?: number;

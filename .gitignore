@@ -14,3 +14,4 @@ USER.md
 # All other workspace config is local-only
 .vercel
 .git-rewrite/
+node_modules/

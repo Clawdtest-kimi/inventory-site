@@ -71,6 +71,7 @@ const thicknessConfigs = [
   { value: "8", label: "8µ", reelsKey: "reels8" as const },
   { value: "9", label: "9µ", reelsKey: "reels9" as const },
   { value: "12", label: "12µ", reelsKey: "reels12" as const },
+  { value: "20", label: "20µ", reelsKey: "reels20" as const },
   { value: "37", label: "37µ", reelsKey: "reels37" as const },
   { value: "40", label: "40µ", reelsKey: "reels40" as const },
 ];
@@ -114,6 +115,8 @@ export function InventoryClient() {
             qty9: r.thicknesses?.["9"]?.qty || 0,
             reels12: r.thicknesses?.["12"]?.reels || 0,
             qty12: r.thicknesses?.["12"]?.qty || 0,
+            reels20: r.thicknesses?.["20"]?.reels || 0,
+            qty20: r.thicknesses?.["20"]?.qty || 0,
             reels37: r.thicknesses?.["37"]?.reels || 0,
             qty37: r.thicknesses?.["37"]?.qty || 0,
             reels40: r.thicknesses?.["40"]?.reels || 0,
@@ -185,6 +188,7 @@ export function InventoryClient() {
       "8": "reels8",
       "9": "reels9",
       "12": "reels12",
+      "20": "reels20",
       "37": "reels37",
       "40": "reels40",
     };
@@ -235,6 +239,7 @@ export function InventoryClient() {
           "8": "qty8",
           "9": "qty9",
           "12": "qty12",
+      "20": "qty20",
           "37": "qty37",
           "40": "qty40",
         };
@@ -264,6 +269,7 @@ export function InventoryClient() {
       "8": "reels8",
       "9": "reels9",
       "12": "reels12",
+      "20": "reels20",
       "37": "reels37",
       "40": "reels40",
     };
@@ -273,6 +279,7 @@ export function InventoryClient() {
       "8": "qty8",
       "9": "qty9",
       "12": "qty12",
+      "20": "qty20",
       "37": "qty37",
       "40": "qty40",
     };
@@ -297,6 +304,7 @@ export function InventoryClient() {
       { key: "8", label: "8µ", reels: "reels8", qty: "qty8" },
       { key: "9", label: "9µ", reels: "reels9", qty: "qty9" },
       { key: "12", label: "12µ", reels: "reels12", qty: "qty12" },
+      { key: "20", label: "20µ", reels: "reels20", qty: "qty20" },
       { key: "37", label: "37µ", reels: "reels37", qty: "qty37" },
       { key: "40", label: "40µ", reels: "reels40", qty: "qty40" },
     ].filter(col => {
@@ -324,6 +332,7 @@ export function InventoryClient() {
       "8": { reels: row.reels8 || 0, qty: row.qty8 || 0 },
       "9": { reels: row.reels9 || 0, qty: row.qty9 || 0 },
       "12": { reels: row.reels12 || 0, qty: row.qty12 || 0 },
+      "20": { reels: row.reels20 || 0, qty: row.qty20 || 0 },
       "37": { reels: row.reels37 || 0, qty: row.qty37 || 0 },
       "40": { reels: row.reels40 || 0, qty: row.qty40 || 0 },
     };
